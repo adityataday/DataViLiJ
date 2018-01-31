@@ -35,7 +35,7 @@ public class Recitation1 extends Application {
             }
         });
         
-        // Button 2
+        // Button 
         btn1.setText("Say 'Goodbye Cruel World!'");
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             
@@ -47,6 +47,7 @@ public class Recitation1 extends Application {
         
         FlowPane root = new FlowPane();
         root.getChildren().add(btn);
+        root.getChildren().add(btn1);
         
         Scene scene = new Scene(root, 300, 250);
         
