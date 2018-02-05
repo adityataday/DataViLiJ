@@ -39,12 +39,13 @@ public final class AppUI extends UITemplate {
 
     @Override
     protected void setToolBar(ApplicationTemplate applicationTemplate) {
-        // TODO for homework 1
+        // Calling this method from the super class.
+        super.setToolBar(applicationTemplate); 
     }
 
     @Override
     protected void setToolbarHandlers(ApplicationTemplate applicationTemplate) {
-        applicationTemplate.setActionComponent(new AppActions(applicationTemplate));
+        applicationTemplate.setActionComponent(new AppActions(applicationTemplate));    
         newButton.setOnAction(e -> applicationTemplate.getActionComponent().handleNewRequest());
         saveButton.setOnAction(e -> applicationTemplate.getActionComponent().handleSaveRequest());
         loadButton.setOnAction(e -> applicationTemplate.getActionComponent().handleLoadRequest());
