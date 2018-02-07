@@ -2,10 +2,14 @@ package ui;
 
 import actions.AppActions;
 import static java.io.File.separator;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import static settings.AppPropertyTypes.SCREENSHOT_ICON;
 import static settings.AppPropertyTypes.SCREENSHOT_TOOLTIP;
@@ -34,7 +38,7 @@ public final class AppUI extends UITemplate {
     private TextArea textArea;       // text area for new data input
     private boolean hasNewText;     // whether or not the text area has any new data since last display
 
-    private String scrnshoticonPath;
+    private String scrnshoticonPath; // path to the 'Screen Shot' button
 
     public ScatterChart<Number, Number> getChart() {
         return chart;
@@ -50,8 +54,8 @@ public final class AppUI extends UITemplate {
         super.setResourcePaths(applicationTemplate);
         PropertyManager manager = applicationTemplate.manager;
         String iconsPath = "/" + String.join(separator,
-                                             manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
-                                             manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
+                manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
+                manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
 
         scrnshoticonPath = String.join(separator, iconsPath, manager.getPropertyValue(SCREENSHOT_ICON.name()));
     }
@@ -61,7 +65,7 @@ public final class AppUI extends UITemplate {
         // Calling this method from the super class.
         super.setToolBar(applicationTemplate);
         PropertyManager manager = applicationTemplate.manager;
-        scrnshotButton = setToolbarButton(scrnshoticonPath, manager.getPropertyValue(SCREENSHOT_TOOLTIP.name()), false);
+        scrnshotButton = setToolbarButton(scrnshoticonPath, manager.getPropertyValue(SCREENSHOT_TOOLTIP.name()), true);
         toolBar = new ToolBar(newButton, saveButton, loadButton, printButton, exitButton, scrnshotButton);
     }
 
@@ -88,11 +92,37 @@ public final class AppUI extends UITemplate {
 
     private void layout() {
         // TODO for homework 1
-        getChart();
+        HBox hbox = new HBox(8); // Main Hbox frame under the appPane toolbar
+        
+        VBox dataElements = new VBox(8);   // This VBox has all the Data File elements which contains the textbox and display button under the Hbox
+       
+        textArea = new TextArea();
+        displayButton = new Button("Display");
+        
+        textArea.setPrefWidth(200);
+        textArea.setPrefHeight(100);
+        
+        dataElements.getChildren().addAll(new Label("Data file"),textArea, displayButton);
+        
+        VBox chartElement = new VBox(8);  // This Vbox has the scatterchart under the HBox.
+        
+        // Initializing the Chart
+        final NumberAxis xAxis = new NumberAxis(0, 110, 10);
+        final NumberAxis yAxis = new NumberAxis(0, 100, 10);
+        
+        chart = new ScatterChart<>(xAxis,yAxis);
+        
+        chartElement.getChildren().addAll(new Label("Data Vizualization"), chart);
+     
+        
+        hbox.getChildren().addAll(dataElements,chartElement);
+        
+        
+        appPane.getChildren().addAll(hbox);
+
     }
 
     private void setWorkspaceActions() {
         // TODO for homework 1
-
     }
 }
