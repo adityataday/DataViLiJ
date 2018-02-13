@@ -1,7 +1,11 @@
 package ui;
 
 import actions.AppActions;
+import dataprocessors.AppData;
 import static java.io.File.separator;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
@@ -93,36 +97,40 @@ public final class AppUI extends UITemplate {
     private void layout() {
         // TODO for homework 1
         HBox hbox = new HBox(8); // Main Hbox frame under the appPane toolbar
-        
+
         VBox dataElements = new VBox(8);   // This VBox has all the Data File elements which contains the textbox and display button under the Hbox
-       
+
         textArea = new TextArea();
         displayButton = new Button("Display");
-        
+
         textArea.setPrefWidth(200);
         textArea.setPrefHeight(100);
-        
-        dataElements.getChildren().addAll(new Label("Data file"),textArea, displayButton);
-        
+
+        dataElements.getChildren().addAll(new Label("Data file"), textArea, displayButton);
+
         VBox chartElement = new VBox(8);  // This Vbox has the scatterchart under the HBox.
-        
+
         // Initializing the Chart
-        final NumberAxis xAxis = new NumberAxis(0, 110, 10);
-        final NumberAxis yAxis = new NumberAxis(0, 100, 10);
-        
-        chart = new ScatterChart<>(xAxis,yAxis);
-        
-        chartElement.getChildren().addAll(new Label("Data Vizualization"), chart);
-     
-        
-        hbox.getChildren().addAll(dataElements,chartElement);
-        
-        
+  
+
+        chart = new ScatterChart<>(new NumberAxis(), new NumberAxis());
+        chart.setTitle("Data Visualization");
+
+        chartElement.getChildren().addAll(chart);
+
+        hbox.getChildren().addAll(dataElements, chartElement);
+
         appPane.getChildren().addAll(hbox);
 
     }
 
     private void setWorkspaceActions() {
         // TODO for homework 1
+        displayButton.setOnAction(e -> {
+            AppData data = ((AppData) applicationTemplate.getDataComponent());
+            data.loadData(textArea.getText());
+            data.displayData();
+        });
+     
     }
 }
