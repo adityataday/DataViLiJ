@@ -3,9 +3,6 @@ package ui;
 import actions.AppActions;
 import dataprocessors.AppData;
 import static java.io.File.separator;
-import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
 import javafx.scene.control.Button;
@@ -111,8 +108,6 @@ public final class AppUI extends UITemplate {
         VBox chartElement = new VBox(8);  // This Vbox has the scatterchart under the HBox.
 
         // Initializing the Chart
-  
-
         chart = new ScatterChart<>(new NumberAxis(), new NumberAxis());
         chart.setTitle("Data Visualization");
 
@@ -126,11 +121,26 @@ public final class AppUI extends UITemplate {
 
     private void setWorkspaceActions() {
         // TODO for homework 1
+
+        //ActionListener for the DisplayButton
         displayButton.setOnAction(e -> {
             AppData data = ((AppData) applicationTemplate.getDataComponent());
             data.loadData(textArea.getText());
             data.displayData();
+            data.clear();
         });
-     
+
+        //ActionLister for textArea. When the user releases the key this action is triggered.
+        // It checks if there is any text in the application then the new and save button's are enabled.
+        // When the text is empty then the save and new buttons are disabled.
+        textArea.setOnKeyReleased(e -> {
+            newButton.setDisable(false);
+            saveButton.setDisable(false);
+            if (textArea.getText().isEmpty()) {
+                newButton.setDisable(true);
+                saveButton.setDisable(true);
+            }
+        });
+
     }
 }
