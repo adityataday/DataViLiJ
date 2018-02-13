@@ -89,6 +89,7 @@ public final class AppUI extends UITemplate {
     @Override
     public void clear() {
         // TODO for homework 1
+
     }
 
     private void layout() {
@@ -125,9 +126,10 @@ public final class AppUI extends UITemplate {
         //ActionListener for the DisplayButton
         displayButton.setOnAction(e -> {
             AppData data = ((AppData) applicationTemplate.getDataComponent());
+            data.clear();
+            chart.getData().clear();
             data.loadData(textArea.getText());
             data.displayData();
-            data.clear();
         });
 
         //ActionLister for textArea. When the user releases the key this action is triggered.
