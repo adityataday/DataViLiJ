@@ -28,24 +28,26 @@ public class TTTBoard extends GridPane {
     }
 
     private void setConstraints() {
-        GridPane grid = new GridPane();
+        //GridPane grid = new GridPane();
         for (int i = 0; i < dim; i++) {
             RowConstraints rc = new RowConstraints();
             rc.setVgrow(Priority.ALWAYS);
             rc.setFillHeight(true);
-            grid.getRowConstraints().add(rc);
+            this.getRowConstraints().add(rc);
             ColumnConstraints cc = new ColumnConstraints();
             cc.setHgrow(Priority.ALWAYS);
             cc.setFillWidth(true);
-            grid.getColumnConstraints().add(cc);
+            this.getColumnConstraints().add(cc);
         }
     }
 
     private void addButtons() {
         for (int i = 0; i < dim; i++) {
-            for (int j = 0; j < dim; j++) 
-                TTTButton btn = new TTTButton(gui,engine,dim,dim);
-            
+            for (int j = 0; j < dim; j++) {
+                Button btn = new TTTButton(gui, engine, i, j);
+                this.add(btn, i, j);
+            }
+
         }
 
     }
