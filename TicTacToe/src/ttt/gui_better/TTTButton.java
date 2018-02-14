@@ -22,11 +22,10 @@ public class TTTButton extends Button {
         this.engine = engine;
         this.row = row;
         this.col = col;
-        // ???
+        setListener();
     }
 
     private void setListener() {
-        // ???
+        
     }
-
 }
