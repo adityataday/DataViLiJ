@@ -89,7 +89,11 @@ public final class AppUI extends UITemplate {
     @Override
     public void clear() {
         // TODO for homework 1
-
+        textArea.clear();
+        chart.getData().clear();
+        newButton.setDisable(true);
+        saveButton.setDisable(true);
+        
     }
 
     private void layout() {

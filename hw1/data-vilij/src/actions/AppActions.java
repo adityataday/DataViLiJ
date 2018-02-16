@@ -5,6 +5,15 @@ import vilij.templates.ApplicationTemplate;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import javafx.stage.FileChooser;
+import static settings.AppPropertyTypes.DATA_FILE_EXT;
+import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
+import static settings.AppPropertyTypes.SAVE_UNSAVED_WORK;
+import static settings.AppPropertyTypes.SAVE_UNSAVED_WORK_TITLE;
+import static settings.AppPropertyTypes.INITIAL_SAVE_FILE_NAME;
+import ui.AppUI;
+import vilij.components.ConfirmationDialog;
+import vilij.components.Dialog;
 
 /**
  * This is the concrete implementation of the action handlers required by the
@@ -30,8 +39,12 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleNewRequest() {
-        // TODO for homework 1
-
+        try {
+            // TODO for homework 1
+            this.promptToSave();
+        } catch (IOException ex) {
+            applicationTemplate.getDialog(Dialog.DialogType.ERROR).show(ex.getClass().getName(), ex.getMessage());
+        }
     }
 
     @Override
@@ -47,7 +60,6 @@ public final class AppActions implements ActionComponent {
     @Override
     public void handleExitRequest() {
         // TODO for homework 1
-        System.out.println("Exiting the application");
         System.exit(0);
     }
 
@@ -80,6 +92,21 @@ public final class AppActions implements ActionComponent {
     private boolean promptToSave() throws IOException {
         // TODO for homework 1
         // TODO remove the placeholder line below after you have implemented this method
+
+        ConfirmationDialog save = (ConfirmationDialog) applicationTemplate.getDialog(Dialog.DialogType.CONFIRMATION);
+        save.show(applicationTemplate.manager.getPropertyValue(SAVE_UNSAVED_WORK_TITLE.name()), applicationTemplate.manager.getPropertyValue(SAVE_UNSAVED_WORK.name()));
+
+        if (save.getSelectedOption() == ConfirmationDialog.Option.YES) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialFileName(applicationTemplate.manager.getPropertyValue(INITIAL_SAVE_FILE_NAME.name()));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT_DESC.name()), applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name())));
+            fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+            return true;
+        } else if (save.getSelectedOption() == ConfirmationDialog.Option.NO) {
+            ((AppUI) applicationTemplate.getUIComponent()).clear();
+            return true;
+        }
+
         return false;
     }
 }
