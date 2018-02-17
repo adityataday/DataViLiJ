@@ -1,5 +1,7 @@
 package actions;
 
+import java.io.File;
+import java.io.FileWriter;
 import vilij.components.ActionComponent;
 import vilij.templates.ApplicationTemplate;
 
@@ -8,6 +10,7 @@ import java.nio.file.Path;
 import javafx.stage.FileChooser;
 import static settings.AppPropertyTypes.DATA_FILE_EXT;
 import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
+import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION;
 import static settings.AppPropertyTypes.SAVE_UNSAVED_WORK;
 import static settings.AppPropertyTypes.SAVE_UNSAVED_WORK_TITLE;
 import static settings.AppPropertyTypes.INITIAL_SAVE_FILE_NAME;
@@ -45,6 +48,7 @@ public final class AppActions implements ActionComponent {
         } catch (IOException ex) {
             applicationTemplate.getDialog(Dialog.DialogType.ERROR).show(ex.getClass().getName(), ex.getMessage());
         }
+
     }
 
     @Override
@@ -94,14 +98,31 @@ public final class AppActions implements ActionComponent {
         // TODO remove the placeholder line below after you have implemented this method
 
         ConfirmationDialog save = (ConfirmationDialog) applicationTemplate.getDialog(Dialog.DialogType.CONFIRMATION);
+
         save.show(applicationTemplate.manager.getPropertyValue(SAVE_UNSAVED_WORK_TITLE.name()), applicationTemplate.manager.getPropertyValue(SAVE_UNSAVED_WORK.name()));
 
         if (save.getSelectedOption() == ConfirmationDialog.Option.YES) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setInitialFileName(applicationTemplate.manager.getPropertyValue(INITIAL_SAVE_FILE_NAME.name()));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT_DESC.name()), applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name())));
-            fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+
+            File file = fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+
+            if (file != null) {
+                if (!file.getName().contains(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name()))) {
+                    throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION.name()));
+                }
+                try {
+                    FileWriter filewriter = new FileWriter(file);
+                    filewriter.write(((AppUI) applicationTemplate.getUIComponent()).getTextArea().getText());
+                    filewriter.close();
+                } catch (IOException ex) {
+                    throw new IOException();
+                }
+            }
+
             return true;
+
         } else if (save.getSelectedOption() == ConfirmationDialog.Option.NO) {
             ((AppUI) applicationTemplate.getUIComponent()).clear();
             return true;

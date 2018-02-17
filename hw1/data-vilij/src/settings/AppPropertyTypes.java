@@ -14,12 +14,16 @@ public enum AppPropertyTypes {
 
     /* user interface icon file names */
     SCREENSHOT_ICON,
+    
+    /* user interface Button */
+    DISPLAY_BUTTON,
 
     /* tooltips for user interface buttons */
     SCREENSHOT_TOOLTIP,
 
     /* error messages */
     RESOURCE_SUBDIR_NOT_FOUND,
+    INCORRECT_FILE_EXTENSION,
 
     /* application-specific message titles */
     SAVE_UNSAVED_WORK_TITLE,
@@ -33,4 +37,6 @@ public enum AppPropertyTypes {
     TEXT_AREA,
     SPECIFIED_FILE,
     INITIAL_SAVE_FILE_NAME,
+    DATA_ENTRY_LABEL,
+    CHART_TITLE,
 }
