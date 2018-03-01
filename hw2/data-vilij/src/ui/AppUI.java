@@ -31,17 +31,21 @@ import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
  */
 public final class AppUI extends UITemplate {
 
-    /** The application to which this class of actions belongs. */
+    /**
+     * The application to which this class of actions belongs.
+     */
     ApplicationTemplate applicationTemplate;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private Button                       scrnshotButton; // toolbar button to take a screenshot of the data
+    private Button scrnshotButton; // toolbar button to take a screenshot of the data
     private ScatterChart<Number, Number> chart;          // the chart where data will be displayed
-    private Button                       displayButton;  // workspace button to display data on the chart
-    private TextArea                     textArea;       // text area for new data input
-    private boolean                      hasNewText;     // whether or not the text area has any new data since last display
+    private Button displayButton;  // workspace button to display data on the chart
+    private TextArea textArea;       // text area for new data input
+    private boolean hasNewText;     // whether or not the text area has any new data since last display
 
-    public ScatterChart<Number, Number> getChart() { return chart; }
+    public ScatterChart<Number, Number> getChart() {
+        return chart;
+    }
 
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
@@ -58,14 +62,14 @@ public final class AppUI extends UITemplate {
         super.setToolBar(applicationTemplate);
         PropertyManager manager = applicationTemplate.manager;
         String iconsPath = "/" + String.join(separator,
-                                             manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
-                                             manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
+                manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
+                manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
         String scrnshoticonPath = String.join(separator,
-                                              iconsPath,
-                                              manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_ICON.name()));
+                iconsPath,
+                manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_ICON.name()));
         scrnshotButton = setToolbarButton(scrnshoticonPath,
-                                          manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()),
-                                          true);
+                manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()),
+                true);
         toolBar.getItems().add(scrnshotButton);
     }
 
@@ -91,12 +95,14 @@ public final class AppUI extends UITemplate {
         chart.getData().clear();
     }
 
-    public String getCurrentText() { return textArea.getText(); }
+    public String getCurrentText() {
+        return textArea.getText();
+    }
 
     private void layout() {
         PropertyManager manager = applicationTemplate.manager;
-        NumberAxis      xAxis   = new NumberAxis();
-        NumberAxis      yAxis   = new NumberAxis();
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
         chart = new ScatterChart<>(xAxis, yAxis);
         chart.setTitle(manager.getPropertyValue(AppPropertyTypes.CHART_TITLE.name()));
 
@@ -108,9 +114,9 @@ public final class AppUI extends UITemplate {
         leftPanel.setMaxSize(windowWidth * 0.29, windowHeight * 0.3);
         leftPanel.setMinSize(windowWidth * 0.29, windowHeight * 0.3);
 
-        Text   leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
-        String fontname       = manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLEFONT.name());
-        Double fontsize       = Double.parseDouble(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLESIZE.name()));
+        Text leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
+        String fontname = manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLEFONT.name());
+        Double fontsize = Double.parseDouble(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLESIZE.name()));
         leftPanelTitle.setFont(Font.font(fontname, fontsize));
 
         textArea = new TextArea();
@@ -139,19 +145,21 @@ public final class AppUI extends UITemplate {
         setDisplayButtonActions();
     }
 
+    //ActionLister for textArea. When the user releases the key this action is triggered.
+    // It checks if there is any text in the application then the new and save button's are enabled.
+    // When the text is empty then the save and new buttons are disabled.
     private void setTextAreaActions() {
-        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                if (!newValue.equals(oldValue)) {
-                    ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(true);
-                    if (newValue.charAt(newValue.length() - 1) == '\n' || newValue.isEmpty())
-                        hasNewText = true;
-                    newButton.setDisable(false);
-                    saveButton.setDisable(false);
-                }
-            } catch (IndexOutOfBoundsException e) {
-                System.err.println(newValue);
+
+        textArea.setOnKeyReleased(e -> {
+            hasNewText = true;
+            newButton.setDisable(false);
+            saveButton.setDisable(false);
+            ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(true);
+            if (textArea.getText().isEmpty()) {
+                newButton.setDisable(true);
+                saveButton.setDisable(true);
             }
+
         });
     }
 
@@ -170,5 +178,13 @@ public final class AppUI extends UITemplate {
 
             }
         });
+    }
+
+    public Button getSaveButton() {
+        return saveButton;
+    }
+    
+    public Button getNewButton(){
+        return newButton;
     }
 }
