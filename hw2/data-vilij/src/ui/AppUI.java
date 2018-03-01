@@ -172,6 +172,7 @@ public final class AppUI extends UITemplate {
                     dataComponent.clear();
                     dataComponent.loadData(textArea.getText());
                     dataComponent.displayData();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -184,8 +185,8 @@ public final class AppUI extends UITemplate {
     public Button getSaveButton() {
         return saveButton;
     }
-    
-    public Button getNewButton(){
+
+    public Button getNewButton() {
         return newButton;
     }
 }

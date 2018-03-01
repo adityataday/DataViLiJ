@@ -63,6 +63,7 @@ public final class TSDProcessor {
                         String label = list.get(1);
                         String[] pair = list.get(2).split(",");
                         Point2D point = new Point2D(Double.parseDouble(pair[0]), Double.parseDouble(pair[1]));
+                        checkInstanceDuplicates(name);
                         dataLabels.put(name, label);
                         dataPoints.put(name, point);
                     } catch (Exception e) {
@@ -107,6 +108,14 @@ public final class TSDProcessor {
         if (!name.startsWith("@")) {
             throw new InvalidDataNameException(name);
         }
+
         return name;
+    }
+
+    private void checkInstanceDuplicates(String name) throws Exception {
+        if (dataLabels.containsKey(name)) {
+            throw new Exception(name + " label already exists");
+        }
+
     }
 }
