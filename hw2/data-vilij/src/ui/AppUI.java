@@ -177,6 +177,7 @@ public final class AppUI extends UITemplate {
                 }
 
             }
+            hasNewText = false;
         });
     }
 

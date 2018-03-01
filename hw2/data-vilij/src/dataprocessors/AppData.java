@@ -44,7 +44,7 @@ public class AppData implements DataComponent {
             String          errTitle = manager.getPropertyValue(PropertyTypes.LOAD_ERROR_TITLE.name());
             String          errMsg   = manager.getPropertyValue(PropertyTypes.LOAD_ERROR_MSG.name());
             String          errInput = manager.getPropertyValue(AppPropertyTypes.TEXT_AREA.name());
-            dialog.show(errTitle, errMsg + errInput);
+            dialog.show(errTitle, errMsg + errInput + e.getMessage());
         }
     }
 
@@ -66,5 +66,9 @@ public class AppData implements DataComponent {
 
     public void displayData() {
         processor.toChartData(((AppUI) applicationTemplate.getUIComponent()).getChart());
+    }
+
+    private String Parse(String dataString) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
