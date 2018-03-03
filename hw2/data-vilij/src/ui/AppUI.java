@@ -21,6 +21,7 @@ import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
 import static java.io.File.separator;
+import javafx.scene.control.CheckBox;
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
 
@@ -42,6 +43,7 @@ public final class AppUI extends UITemplate {
     private Button displayButton;  // workspace button to display data on the chart
     private TextArea textArea;       // text area for new data input
     private boolean hasNewText;     // whether or not the text area has any new data since last display
+    private CheckBox checkBox;
 
     public void setHasNewText(boolean hasNewText) {
         this.hasNewText = hasNewText;
@@ -127,8 +129,9 @@ public final class AppUI extends UITemplate {
 
         HBox processButtonsBox = new HBox();
         displayButton = new Button(manager.getPropertyValue(AppPropertyTypes.DISPLAY_BUTTON_TEXT.name()));
+        checkBox = new CheckBox(manager.getPropertyValue(AppPropertyTypes.CHECKBOX_LABEL.name()));
         HBox.setHgrow(processButtonsBox, Priority.ALWAYS);
-        processButtonsBox.getChildren().add(displayButton);
+        processButtonsBox.getChildren().addAll(displayButton, checkBox);
 
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox);
 
@@ -147,6 +150,7 @@ public final class AppUI extends UITemplate {
     private void setWorkspaceActions() {
         setTextAreaActions();
         setDisplayButtonActions();
+        setCheckBoxAction();
     }
 
     //ActionLister for textArea. When the user releases the key this action is triggered.
@@ -183,6 +187,18 @@ public final class AppUI extends UITemplate {
 
             }
             hasNewText = false;
+        });
+    }
+
+    private void setCheckBoxAction() {
+        checkBox.setOnAction(event -> {
+            if (checkBox.isSelected()) {
+                textArea.setEditable(false);
+                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
+            } else {
+                textArea.setEditable(true);
+                textArea.setStyle(null);
+            }
         });
     }
 
