@@ -2,7 +2,6 @@ package actions;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import settings.AppPropertyTypes;
 import vilij.components.ActionComponent;
 import vilij.components.ConfirmationDialog;
@@ -17,6 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import static settings.AppPropertyTypes.DATA_FILE_EXT;
+import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
+import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION;
+import static settings.AppPropertyTypes.LOAD_DATA;
 
 import ui.AppUI;
 import static vilij.settings.PropertyTypes.SAVE_WORK_TITLE;
@@ -94,7 +97,12 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleLoadRequest() {
-        // TODO: NOT A PART OF HW 1
+        try {
+            // TODO: NOT A PART OF HW 1
+            load();
+        } catch (IOException ex) {
+            applicationTemplate.getDialog(Dialog.DialogType.ERROR).show(ex.getClass().getName(), ex.getMessage());
+        }
     }
 
     @Override
@@ -153,18 +161,17 @@ public final class AppActions implements ActionComponent {
                     throw new FileNotFoundException(manager.getPropertyValue(AppPropertyTypes.RESOURCE_SUBDIR_NOT_FOUND.name()));
                 }
 
-                //  fileChooser.setInitialDirectory(new File(dataDirURL.getFile()));
+                //fileChooser.setInitialDirectory(new File(dataDirURL.getPath()));
                 fileChooser.setTitle(manager.getPropertyValue(SAVE_WORK_TITLE.name()));
 
-                String description = manager.getPropertyValue(AppPropertyTypes.DATA_FILE_EXT_DESC.name());
-                String extension = manager.getPropertyValue(AppPropertyTypes.DATA_FILE_EXT.name());
-                ExtensionFilter extFilter = new ExtensionFilter(String.format("%s (.*%s)", description, extension),
-                        String.format("*.%s", extension));
-
-                fileChooser.getExtensionFilters().add(extFilter);
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT_DESC.name()), "*" + applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name())));
 
                 File selected = fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+
                 if (selected != null) {
+                    if (!selected.getName().contains(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name()))) {
+                        throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION.name()));
+                    }
                     dataFilePath = selected.toPath();
                     save();
                 } else {
@@ -190,5 +197,21 @@ public final class AppActions implements ActionComponent {
         String errMsg = manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
         String errInput = manager.getPropertyValue(AppPropertyTypes.SPECIFIED_FILE.name());
         dialog.show(errTitle, errMsg + errInput);
+    }
+
+    private void load() throws IOException {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(applicationTemplate.manager.getPropertyValue(LOAD_DATA.name()));
+
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT_DESC.name()), "*" + applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name())));
+
+        File selected = fileChooser.showOpenDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+        if (selected != null) {
+            if (!selected.getName().contains(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name()))) {
+                throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION.name()));
+            }
+            dataFilePath = selected.toPath();
+            applicationTemplate.getDataComponent().loadData(dataFilePath);
+        }
     }
 }

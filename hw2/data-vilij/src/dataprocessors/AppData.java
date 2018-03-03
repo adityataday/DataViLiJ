@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This is the concrete application-specific implementation of the data
@@ -34,6 +37,17 @@ public class AppData implements DataComponent {
     @Override
     public void loadData(Path dataFilePath) {
         // TODO: NOT A PART OF HW 1
+        try {
+            StringBuffer text = new StringBuffer();
+            Files.lines(dataFilePath)
+                    .forEach(list -> {
+                        text.append(list + "\n");
+                    });
+            ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(text.toString());
+            ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public void loadData(String dataString) {
@@ -56,7 +70,7 @@ public class AppData implements DataComponent {
         // NOTE: completing this method was not a part of HW 1. You may have implemented file saving from the
         // confirmation dialog elsewhere in a different way.
         try (PrintWriter writer = new PrintWriter(Files.newOutputStream(dataFilePath))) {
-            writer.write(((AppUI) applicationTemplate.getUIComponent()).getCurrentText());
+            writer.write(((AppUI) applicationTemplate.getUIComponent()).getTextArea().getText());
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

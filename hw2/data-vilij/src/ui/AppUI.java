@@ -43,6 +43,10 @@ public final class AppUI extends UITemplate {
     private TextArea textArea;       // text area for new data input
     private boolean hasNewText;     // whether or not the text area has any new data since last display
 
+    public void setHasNewText(boolean hasNewText) {
+        this.hasNewText = hasNewText;
+    }
+
     public ScatterChart<Number, Number> getChart() {
         return chart;
     }
@@ -95,8 +99,8 @@ public final class AppUI extends UITemplate {
         chart.getData().clear();
     }
 
-    public String getCurrentText() {
-        return textArea.getText();
+    public TextArea getTextArea() {
+        return textArea;
     }
 
     private void layout() {
