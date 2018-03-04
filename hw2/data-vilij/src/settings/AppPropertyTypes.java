@@ -20,7 +20,8 @@ public enum AppPropertyTypes {
 
     /* error messages */
     RESOURCE_SUBDIR_NOT_FOUND,
-    INCORRECT_FILE_EXTENSION,
+    INCORRECT_FILE_EXTENSION_DATA,
+    INCORRECT_FILE_EXTENSION_IMAGE,
     LABEL_ALREADY_EXISTS,
 
     /* application-specific message titles */
@@ -29,13 +30,16 @@ public enum AppPropertyTypes {
     TO_MANY_LINES,
     TO_MANY_LINES_MSG_1,
     TO_MANY_LINES_MSG_2,
+    SAVE_IMAGE,
 
     /* application-specific messages */
     SAVE_UNSAVED_WORK,
 
     /* application-specific parameters */
     DATA_FILE_EXT,
+    IMAGE_FILE_EXT,
     DATA_FILE_EXT_DESC,
+    IMAGE_FILE_EXT_DESC,
     TEXT_AREA,
     SPECIFIED_FILE,
     LEFT_PANE_TITLE,

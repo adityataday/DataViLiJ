@@ -87,6 +87,7 @@ public final class AppUI extends UITemplate {
         loadButton.setOnAction(e -> applicationTemplate.getActionComponent().handleLoadRequest());
         exitButton.setOnAction(e -> applicationTemplate.getActionComponent().handleExitRequest());
         printButton.setOnAction(e -> applicationTemplate.getActionComponent().handlePrintRequest());
+        scrnshotButton.setOnAction(e -> ((AppActions) applicationTemplate.getActionComponent()).handleScreenshotRequest());
     }
 
     @Override
@@ -158,14 +159,19 @@ public final class AppUI extends UITemplate {
     // When the text is empty then the save and new buttons are disabled.
     private void setTextAreaActions() {
 
-        textArea.setOnKeyReleased(e -> {
-            hasNewText = true;
-            newButton.setDisable(false);
-            saveButton.setDisable(false);
-            ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(true);
-            if (textArea.getText().isEmpty()) {
+        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (!newValue.equals(oldValue) && !newValue.isEmpty()) {
+                hasNewText = true;
+                newButton.setDisable(false);
+                saveButton.setDisable(false);
+                ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(true);
+
+            } else {
+                hasNewText = false;
                 newButton.setDisable(true);
                 saveButton.setDisable(true);
+                ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
             }
 
         });
@@ -180,6 +186,12 @@ public final class AppUI extends UITemplate {
                     dataComponent.clear();
                     dataComponent.loadData(textArea.getText());
                     dataComponent.displayData();
+
+                    if (chart.getData().isEmpty()) {
+                        scrnshotButton.setDisable(true);
+                    } else {
+                        scrnshotButton.setDisable(false);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();

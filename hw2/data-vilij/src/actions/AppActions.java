@@ -16,10 +16,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.WritableImage;
+import javax.imageio.ImageIO;
 import static settings.AppPropertyTypes.DATA_FILE_EXT;
 import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
-import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION;
+import static settings.AppPropertyTypes.IMAGE_FILE_EXT;
+import static settings.AppPropertyTypes.IMAGE_FILE_EXT_DESC;
+import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION_DATA;
+import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION_IMAGE;
 import static settings.AppPropertyTypes.LOAD_DATA;
+import static settings.AppPropertyTypes.SAVE_IMAGE;
 
 import ui.AppUI;
 import static vilij.settings.PropertyTypes.SAVE_WORK_TITLE;
@@ -100,6 +108,7 @@ public final class AppActions implements ActionComponent {
         try {
             // TODO: NOT A PART OF HW 1
             load();
+            isUnsaved.set(false);
         } catch (IOException ex) {
             applicationTemplate.getDialog(Dialog.DialogType.ERROR).show(ex.getClass().getName(), ex.getMessage());
         }
@@ -121,8 +130,14 @@ public final class AppActions implements ActionComponent {
         // TODO: NOT A PART OF HW 1
     }
 
-    public void handleScreenshotRequest() throws IOException {
+    public void handleScreenshotRequest() {
         // TODO: NOT A PART OF HW 1
+        try {
+            saveImage();
+        } catch (IOException ex) {
+            applicationTemplate.getDialog(Dialog.DialogType.ERROR).show(ex.getClass().getName(), ex.getMessage());
+        }
+
     }
 
     /**
@@ -170,7 +185,7 @@ public final class AppActions implements ActionComponent {
 
                 if (selected != null) {
                     if (!selected.getName().contains(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name()))) {
-                        throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION.name()));
+                        throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION_DATA.name()));
                     }
                     dataFilePath = selected.toPath();
                     save();
@@ -208,10 +223,27 @@ public final class AppActions implements ActionComponent {
         File selected = fileChooser.showOpenDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
         if (selected != null) {
             if (!selected.getName().contains(applicationTemplate.manager.getPropertyValue(DATA_FILE_EXT.name()))) {
-                throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION.name()));
+                throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION_DATA.name()));
             }
             dataFilePath = selected.toPath();
             applicationTemplate.getDataComponent().loadData(dataFilePath);
+        }
+    }
+
+    private void saveImage() throws IOException {
+        WritableImage image = ((AppUI) applicationTemplate.getUIComponent()).getChart().snapshot(new SnapshotParameters(), null);
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(applicationTemplate.manager.getPropertyValue(SAVE_IMAGE.name()));
+
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT_DESC.name()), "*" + applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT.name())));
+
+        File selected = fileChooser.showSaveDialog(applicationTemplate.getUIComponent().getPrimaryWindow());
+        if (selected != null) {
+            if (!selected.getName().contains(applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT.name()))) {
+                throw new IOException(applicationTemplate.manager.getPropertyValue(INCORRECT_FILE_EXTENSION_IMAGE.name()));
+            }
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT.name()).substring(1), selected);
         }
     }
 }

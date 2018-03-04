@@ -1,5 +1,6 @@
 package dataprocessors;
 
+import actions.AppActions;
 import settings.AppPropertyTypes;
 import ui.AppUI;
 import vilij.components.DataComponent;
@@ -40,8 +41,12 @@ public class AppData implements DataComponent {
                     .forEach(list -> {
                         text.append(list + "\n");
                     });
-            ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(text.toString());
-            ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
+            if (((AppUI) applicationTemplate.getUIComponent()).getTextArea().isEditable()) {
+                ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(text.toString());
+                ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
+                ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+            }
+
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -50,6 +55,7 @@ public class AppData implements DataComponent {
     public void loadData(String dataString) {
         try {
             processor.processString(dataString);
+            ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
         } catch (Exception e) {
             ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
             PropertyManager manager = applicationTemplate.manager;
@@ -58,6 +64,7 @@ public class AppData implements DataComponent {
             String errInput = manager.getPropertyValue(AppPropertyTypes.TEXT_AREA.name());
             dialog.show(errTitle, errMsg + errInput + e.getMessage());
             ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+            ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
             processor.clear();
         }
     }

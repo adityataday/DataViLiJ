@@ -20,12 +20,14 @@ functionality within the main workspace. -->
 
         <!-- ERROR MESSAGES -->
         <property name="RESOURCE_SUBDIR_NOT_FOUND" value="Directory not found under resources."/>
-        <property name="INCORRECT_FILE_EXTENSION" value="Program only supports Tab-Seperated Data files, Please save/load .tsd extention files only."/>
+        <property name="INCORRECT_FILE_EXTENSION_DATA" value="Program only supports Tab-Seperated Data files, Please save/load .tsd extention files only."/>
+        <property name="INCORRECT_FILE_EXTENSION_IMAGE" value="Program only supports PNG files, Please save as .png extention only."/>
         <property name="LABEL_ALREADY_EXISTS" value=" label already exists"/>
 
         <!-- APPLICATION-SPECIFIC MESSAGE TITLES -->
         <property name="SAVE_UNSAVED_WORK_TITLE" value="Save Current Work"/>
         <property name="LOAD_DATA" value="Load data"/>
+        <property name="SAVE_IMAGE" value="Save Image"/>
         <property name="TO_MANY_LINES" value="To many lines"/>
         <property name="TO_MANY_LINES_MSG_1" value="Loaded data consists of "/>
         <property name="TO_MANY_LINES_MSG_2" value=" lines. Showing only the first 10 in the text area."/>
@@ -35,7 +37,9 @@ functionality within the main workspace. -->
 
         <!-- APPLICATION-SPECIFIC PARAMETERS -->
         <property name="DATA_FILE_EXT" value=".tsd"/>
+        <property name="IMAGE_FILE_EXT" value=".png"/>
         <property name="DATA_FILE_EXT_DESC" value="Tab-Separated Data File"/>
+        <property name="IMAGE_FILE_EXT_DESC" value="Portable Network Graphics"/>
         <property name="TEXT_AREA" value="text area"/>
         <property name="SPECIFIED_FILE" value=" specified file"/>
         <property name="LEFT_PANE_TITLE" value="Data File"/>
