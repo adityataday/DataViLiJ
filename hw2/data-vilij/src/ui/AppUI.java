@@ -2,6 +2,7 @@ package ui;
 
 import actions.AppActions;
 import dataprocessors.AppData;
+import static java.io.File.separator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.NumberAxis;
@@ -20,8 +21,9 @@ import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
-import static java.io.File.separator;
 import javafx.scene.control.CheckBox;
+import static vilij.settings.PropertyTypes.CSS_RESOURCE_FILENAME;
+import static vilij.settings.PropertyTypes.CSS_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
 
@@ -61,6 +63,11 @@ public final class AppUI extends UITemplate {
     @Override
     protected void setResourcePaths(ApplicationTemplate applicationTemplate) {
         super.setResourcePaths(applicationTemplate);
+        PropertyManager manager = applicationTemplate.manager;
+        cssPath = String.join("/",
+                manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
+                manager.getPropertyValue(CSS_RESOURCE_PATH.name()),
+                manager.getPropertyValue(CSS_RESOURCE_FILENAME.name()));
     }
 
     @Override
@@ -146,6 +153,8 @@ public final class AppUI extends UITemplate {
 
         appPane.getChildren().add(workspace);
         VBox.setVgrow(appPane, Priority.ALWAYS);
+
+        applicationTemplate.getUIComponent().getPrimaryScene().getStylesheets().add(cssPath);
     }
 
     private void setWorkspaceActions() {
