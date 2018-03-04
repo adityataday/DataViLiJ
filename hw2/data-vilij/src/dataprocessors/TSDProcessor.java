@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_2;
@@ -47,7 +48,7 @@ public final class TSDProcessor {
     private ApplicationTemplate applicationTemplate;
 
     public TSDProcessor(ApplicationTemplate applicationTemplate) {
-        dataLabels = new HashMap<>();
+        dataLabels = new LinkedHashMap<>();
         dataPoints = new HashMap<>();
         this.applicationTemplate = applicationTemplate;
     }
@@ -96,14 +97,13 @@ public final class TSDProcessor {
      * @param chart the specified chart
      */
     void toChartData(XYChart<Number, Number> chart) {
-        Set<String> labels = new HashSet<>();
+        Set<String> labels;
 
         if (dataLabels.size() <= 10) {
-            labels.addAll(dataLabels.values());
+            labels = new HashSet<>(dataLabels.values());
         } else {
-            displayFilter().forEach(entry -> {
-                labels.add(dataLabels.get(entry));
-            });
+            displayFilter();
+            labels = new HashSet<>(dataLabels.values());
         }
 
         for (String label : labels) {
@@ -132,25 +132,21 @@ public final class TSDProcessor {
 
     private void checkInstanceDuplicates(String name) throws Exception {
         if (dataLabels.containsKey(name)) {
-            throw new Exception(name + " label already exists");
+            throw new Exception(name + applicationTemplate.manager.getPropertyValue(LABEL_ALREADY_EXISTS.name()));
         }
 
     }
 
-    private HashSet displayFilter() {
+    private void displayFilter() {
         ArrayList<String> keys = new ArrayList<>(dataLabels.keySet());
-        HashSet<String> set = new HashSet<>();
+
         for (int i = 0; i < keys.size(); i++) {
-            if (i < 10) {
-                set.add(keys.get(i));
-            } else {
+            if (i >= 10) {
                 dataLabels.remove(keys.get(i));
             }
         }
 
         errorHandlingHelper(keys.size());
-
-        return set;
 
     }
 

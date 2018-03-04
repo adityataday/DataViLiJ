@@ -21,6 +21,7 @@ functionality within the main workspace. -->
         <!-- ERROR MESSAGES -->
         <property name="RESOURCE_SUBDIR_NOT_FOUND" value="Directory not found under resources."/>
         <property name="INCORRECT_FILE_EXTENSION" value="Program only supports Tab-Seperated Data files, Please save/load .tsd extention files only."/>
+        <property name="LABEL_ALREADY_EXISTS" value=" label already exists"/>
 
         <!-- APPLICATION-SPECIFIC MESSAGE TITLES -->
         <property name="SAVE_UNSAVED_WORK_TITLE" value="Save Current Work"/>

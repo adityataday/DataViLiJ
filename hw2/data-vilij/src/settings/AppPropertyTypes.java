@@ -21,6 +21,7 @@ public enum AppPropertyTypes {
     /* error messages */
     RESOURCE_SUBDIR_NOT_FOUND,
     INCORRECT_FILE_EXTENSION,
+    LABEL_ALREADY_EXISTS,
 
     /* application-specific message titles */
     SAVE_UNSAVED_WORK_TITLE,
