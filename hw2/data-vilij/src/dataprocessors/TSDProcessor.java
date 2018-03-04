@@ -7,6 +7,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import static settings.AppPropertyTypes.TO_MANY_LINES;
+import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
+import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_2;
+import vilij.components.Dialog;
+import vilij.components.ErrorDialog;
+import vilij.propertymanager.PropertyManager;
+import vilij.templates.ApplicationTemplate;
 
 /**
  * The data files used by this data visualization applications follow a
@@ -37,10 +44,12 @@ public final class TSDProcessor {
 
     private Map<String, String> dataLabels;
     private Map<String, Point2D> dataPoints;
+    private ApplicationTemplate applicationTemplate;
 
-    public TSDProcessor() {
+    public TSDProcessor(ApplicationTemplate applicationTemplate) {
         dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
+        this.applicationTemplate = applicationTemplate;
     }
 
     /**
@@ -87,7 +96,16 @@ public final class TSDProcessor {
      * @param chart the specified chart
      */
     void toChartData(XYChart<Number, Number> chart) {
-        Set<String> labels = new HashSet<>(dataLabels.values());
+        Set<String> labels = new HashSet<>();
+
+        if (dataLabels.size() <= 10) {
+            labels.addAll(dataLabels.values());
+        } else {
+            displayFilter().forEach(entry -> {
+                labels.add(dataLabels.get(entry));
+            });
+        }
+
         for (String label : labels) {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
             series.setName(label);
@@ -117,5 +135,30 @@ public final class TSDProcessor {
             throw new Exception(name + " label already exists");
         }
 
+    }
+
+    private HashSet displayFilter() {
+        ArrayList<String> keys = new ArrayList<>(dataLabels.keySet());
+        HashSet<String> set = new HashSet<>();
+        for (int i = 0; i < keys.size(); i++) {
+            if (i < 10) {
+                set.add(keys.get(i));
+            } else {
+                dataLabels.remove(keys.get(i));
+            }
+        }
+
+        errorHandlingHelper(keys.size());
+
+        return set;
+
+    }
+
+    private void errorHandlingHelper(int size) {
+        ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+        PropertyManager manager = applicationTemplate.manager;
+        String errTitle = manager.getPropertyValue(TO_MANY_LINES.name());
+        String errMsg = manager.getPropertyValue(TO_MANY_LINES_MSG_1.name()) + size + manager.getPropertyValue(TO_MANY_LINES_MSG_2.name());
+        dialog.show(errTitle, errMsg);
     }
 }

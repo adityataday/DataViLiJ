@@ -25,6 +25,9 @@ functionality within the main workspace. -->
         <!-- APPLICATION-SPECIFIC MESSAGE TITLES -->
         <property name="SAVE_UNSAVED_WORK_TITLE" value="Save Current Work"/>
         <property name="LOAD_DATA" value="Load data"/>
+        <property name="TO_MANY_LINES" value="To many lines"/>
+        <property name="TO_MANY_LINES_MSG_1" value="Loaded data consists of "/>
+        <property name="TO_MANY_LINES_MSG_2" value=" lines. Showing only the first 10 in the text area."/>
 
         <!-- APPLICATION-SPECIFIC MESSAGES -->
         <property name="SAVE_UNSAVED_WORK" value="Would you like to save current work?"/>

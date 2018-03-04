@@ -13,9 +13,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This is the concrete application-specific implementation of the data
@@ -30,7 +27,7 @@ public class AppData implements DataComponent {
     private ApplicationTemplate applicationTemplate;
 
     public AppData(ApplicationTemplate applicationTemplate) {
-        this.processor = new TSDProcessor();
+        this.processor = new TSDProcessor(applicationTemplate);
         this.applicationTemplate = applicationTemplate;
     }
 
