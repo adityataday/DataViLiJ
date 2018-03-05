@@ -42,5 +42,9 @@ and open the template in the editor.
     -fx-stroke: black; 
 }
 
+.chart-series-line { 
+    -fx-stroke-width: 0; 
+}
+
 
 
