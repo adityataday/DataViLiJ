@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import javafx.scene.shape.Line;
+import javafx.scene.control.Tooltip;
 import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
@@ -190,7 +190,23 @@ public final class TSDProcessor {
         averageY.setName("Average Y Value");
 
         chart.getData().add(averageY);
-       
+
+        for (int i = 0; i < chart.getData().size(); i++) {
+            if (i == chart.getData().size() - 1) {
+                break;
+            }
+
+            chart.getData().get(i).getNode().setVisible(false);
+
+        }
+
+        for (int i = 0; i < chart.getData().size(); i++) {
+            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
+                Tooltip.install(chart, new Tooltip(chart.getData().get(i).getData().get(j).getXValue().toString()+", " +chart.getData().get(i).getData().get(j).getYValue().toString()));
+               
+            }
+
+        }
 
     }
 }
