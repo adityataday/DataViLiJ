@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+import javafx.scene.shape.Line;
 import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
@@ -115,6 +116,9 @@ public final class TSDProcessor {
             });
             chart.getData().add(series);
         }
+
+        averageY(chart);
+
     }
 
     void clear() {
@@ -156,5 +160,37 @@ public final class TSDProcessor {
         String errTitle = manager.getPropertyValue(TO_MANY_LINES.name());
         String errMsg = manager.getPropertyValue(TO_MANY_LINES_MSG_1.name()) + size + manager.getPropertyValue(TO_MANY_LINES_MSG_2.name());
         dialog.show(errTitle, errMsg);
+    }
+
+    private void averageY(XYChart<Number, Number> chart) {
+        double sum = 0;
+        int count = 0;
+        double minX = Integer.MAX_VALUE;
+        double maxX = Integer.MIN_VALUE;
+        for (int i = 0; i < chart.getData().size(); i++) {
+            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
+
+                if (minX > (Double) chart.getData().get(i).getData().get(j).getXValue()) {
+                    minX = (Double) chart.getData().get(i).getData().get(j).getXValue();
+                }
+
+                if (maxX < (Double) chart.getData().get(i).getData().get(j).getXValue()) {
+                    maxX = (Double) chart.getData().get(i).getData().get(j).getXValue();
+                }
+
+                sum += (Double) chart.getData().get(i).getData().get(j).getYValue();
+                count++;
+            }
+
+        }
+
+        XYChart.Series<Number, Number> averageY = new XYChart.Series<>();
+        averageY.getData().add(new XYChart.Data<>(minX, (sum / count)));
+        averageY.getData().add(new XYChart.Data<>(maxX, (sum / count)));
+        averageY.setName("Average Y Value");
+
+        chart.getData().add(averageY);
+       
+
     }
 }
