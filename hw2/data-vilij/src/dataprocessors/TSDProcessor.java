@@ -202,7 +202,7 @@ public final class TSDProcessor {
 
         for (int i = 0; i < chart.getData().size(); i++) {
             for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
-                Tooltip.install(chart, new Tooltip(chart.getData().get(i).getData().get(j).getXValue().toString()+", " +chart.getData().get(i).getData().get(j).getYValue().toString()));
+                Tooltip.install(chart.getData().get(i).getData().get(j).getNode(), new Tooltip(chart.getData().get(i).getData().get(j).getXValue().toString()+", " +chart.getData().get(i).getData().get(j).getYValue().toString()));
                
             }
 
