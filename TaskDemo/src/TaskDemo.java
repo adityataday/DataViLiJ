@@ -34,11 +34,14 @@ public class TaskDemo extends Application {
             Task t = new Task() {
                 @Override
                 protected Object call() throws Exception {
+
                     doTask(this);
+
                     return null;
                 }
             };
             new Thread(t, "Task " + (++taskID)).start();
+
         });
         taskView = new ListView<>();
         taskView.setPrefWidth(300);
@@ -56,7 +59,18 @@ public class TaskDemo extends Application {
         String myName = Thread.currentThread().getName();
         Label myLabel = new Label(myName + " active");
         Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(e -> task.cancel());
+        cancelButton.setOnAction(e -> {
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("Warning Dialog");
+            alert.setHeaderText("Do you want to cancel the task?");
+            alert.setContentText("Press ok to canel the task");
+
+            alert.showAndWait();
+
+            if (alert.getResult().getButtonData().isDefaultButton()) {
+                task.cancel();
+            }
+        });
         FlowPane myPane = new FlowPane();
         ProgressIndicator progress = new ProgressIndicator(0);
         ObservableList<Node> children = myPane.getChildren();
@@ -66,9 +80,12 @@ public class TaskDemo extends Application {
         Platform.runLater(() -> {
             taskView.getItems().add(myPane);
         });
+
         try {
+
             long time = (long) (Math.random() * 20000);
             for (long t = 0; t < time; t += 1) {
+                lock.lock();
                 try {
                     // Perform a "banking transaction".
                     if (Math.random() >= 0.5) {
@@ -79,21 +96,35 @@ public class TaskDemo extends Application {
                         debits--;
                     }
                     int balance = credits - debits;
+
                     if (balance != 0) {
                         System.out.println("Nonzero balance " + balance + "!");
+
                     }
+
                 } finally {
-                    if(lock.isHeldByCurrentThread())
+                    if (lock.isHeldByCurrentThread()) {
                         lock.unlock();
+                    }
+
                 }
                 long tt = t;
                 double pct = (double) tt / time;
+                Platform.runLater(() -> {
+                    progress.setProgress(pct);
+                });
                 Thread.sleep(1);
+
             }
+
         } catch (InterruptedException x) {
             // EMPTY EXCEPTION HANDLERS ARE OFTEN A BAD IDEA!
         }
-        taskView.getItems().remove(myPane);
+
+        Platform.runLater(() -> {
+            taskView.getItems().remove(myPane);
+        });
+
     }
 
     public static void main(String[] args) {
