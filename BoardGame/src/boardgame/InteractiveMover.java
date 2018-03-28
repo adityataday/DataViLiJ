@@ -73,7 +73,7 @@ public class InteractiveMover implements Mover {
                 out.print("Input move for " + player.getName() + ": ");
                 out.flush();
                 String s = in.readLine();
-                if (s == null) {
+                if (s.isEmpty()) {
                     throw new MoverFailureException("End of file on interactive input");
                 }
                 s = s.trim();
@@ -96,6 +96,7 @@ public class InteractiveMover implements Mover {
                     out.println("Incomprehensible move.");
                     continue;
                 }
+                moves.add(move);
                 if (!moves.contains(move)) {
                     out.println(move + " is not a legal move.");
                     continue;
