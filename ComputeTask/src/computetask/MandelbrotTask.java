@@ -20,14 +20,14 @@ import javafx.scene.paint.Color;
  * @version 20180330
  */
 
-public class MandelbrotTask {
+public class MandelbrotTask extends ComputeTask<Image>{
     
     public MandelbrotTask() {
         this(new MandelbrotTaskState(), 10000, 100);
     }
 
     public MandelbrotTask(MandelbrotTaskState state, long iterations, long updateInterval) {
-        // oops...
+        super(new MandelbrotTaskState(), 0, 1000);
     }
 
 }
@@ -38,7 +38,7 @@ public class MandelbrotTask {
  * @author E. Stark
  * @version 20180330
  */
-class MandelbrotTaskState {
+class MandelbrotTaskState extends ComputeTaskState<Image>{
 
     /** Width of the rectangular grid of points. */
     private final int width;

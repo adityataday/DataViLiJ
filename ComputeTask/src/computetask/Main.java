@@ -41,6 +41,8 @@ public class Main extends Application {
         
         progressLabel = new CustomLabel();
         statusPane.getChildren().add(progressLabel);
+        
+        ImageView imageView = new ImageView();
     
         Button piBtn = new Button();
         piBtn.setText("Pi");
@@ -62,6 +64,27 @@ public class Main extends Application {
             t.start();
         });
         buttonBox.getChildren().add(piBtn);
+        
+        Button mandelbrotTask = new Button();
+        mandelbrotTask.setText("Mandelbrot Set");
+        mandelbrotTask.setOnAction(e -> {
+            if(task != null)
+                task.cancel();
+            task = new MandelbrotTask();
+            final CustomLabel currentValueLabel = new CustomLabel();
+            root.setCenter(imageView);
+            primaryStage.sizeToScene();
+            task.getPartialResultProperty().addListener
+                ((obs, os, ns) -> imageView.setImage((Image) ns));
+            task.messageProperty().addListener((obs, ov, nv) -> statusLabel.setText(nv));
+            task.progressProperty().addListener
+                ((obs, ov, nv) -> progressLabel.setText(((int)(nv.doubleValue() * 100)) + "% complete"));
+               
+            Thread t = new Thread(task);
+            t.setDaemon(true);
+            t.start();
+        });
+        buttonBox.getChildren().add(mandelbrotTask);
         
         Button cancelBtn = new Button();
         cancelBtn.setText("Cancel");
