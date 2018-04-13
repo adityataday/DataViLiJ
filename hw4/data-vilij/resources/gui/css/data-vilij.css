@@ -71,4 +71,9 @@ and open the template in the editor.
     -fx-fill: BLACK;
 }
 
+.md-text{
+    -fx-font: 15px "Sans Serif"; 
+    -fx-fill: BLACK;
+}
+
 

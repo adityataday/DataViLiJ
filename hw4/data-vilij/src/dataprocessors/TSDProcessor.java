@@ -1,5 +1,6 @@
 package dataprocessors;
 
+import java.nio.file.Path;
 import javafx.geometry.Point2D;
 import javafx.scene.chart.XYChart;
 
@@ -7,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import javafx.scene.control.Tooltip;
 import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
@@ -80,9 +80,9 @@ public final class TSDProcessor {
                     } catch (Exception e) {
                         //errorMessage.setLength(0);
                         if (e instanceof ArrayIndexOutOfBoundsException) {
-                            errorMessage.append("\n").append(ERROR_LINE_ID + count + " " + list.toString() + " ").append(CORRECT_DATA_FORMAT);
+                            errorMessage.append("\n").append(ERROR_LINE_ID).append(count).append(" ").append(list.toString()).append(" ").append(CORRECT_DATA_FORMAT);
                         } else {
-                            errorMessage.append("\n").append(ERROR_LINE_ID + count + " " + list.toString() + " ").append(e.getMessage());
+                            errorMessage.append("\n").append(ERROR_LINE_ID).append(count).append(" ").append(list.toString()).append(" ").append(e.getMessage());
                         }
                         hadAnError.set(true);
                     }
@@ -99,15 +99,17 @@ public final class TSDProcessor {
      */
     void toChartData(XYChart<Number, Number> chart) {
         Set<String> labels = new HashSet<>(dataLabels.values());
-        for (String label : labels) {
+        labels.stream().map((label) -> {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
             series.setName(label);
             dataLabels.entrySet().stream().filter(entry -> entry.getValue().equals(label)).forEach(entry -> {
                 Point2D point = dataPoints.get(entry.getKey());
                 series.getData().add(new XYChart.Data<>(point.getX(), point.getY()));
             });
+            return series;
+        }).forEachOrdered((series) -> {
             chart.getData().add(series);
-        }
+        });
     }
 
     void clear() {
@@ -149,6 +151,32 @@ public final class TSDProcessor {
         String errTitle = manager.getPropertyValue(TO_MANY_LINES.name());
         String errMsg = manager.getPropertyValue(TO_MANY_LINES_MSG_1.name()) + size + manager.getPropertyValue(TO_MANY_LINES_MSG_2.name());
         dialog.show(errTitle, errMsg);
+    }
+
+    public String metaData(Path dataFilePath) {
+        StringBuilder metadata = new StringBuilder();
+        Set<String> valueSet = new HashSet<>();
+        dataLabels.keySet().forEach((s) -> {
+            valueSet.add(dataLabels.get(s));
+        });
+
+        metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n").append(dataFilePath.toString());
+        metadata.append("\nThe labels are: \n").append(valueSet.toString());
+
+        return metadata.toString();
+    }
+
+    public String metaData() {
+        StringBuilder metadata = new StringBuilder();
+        Set<String> valueSet = new HashSet<>();
+        dataLabels.keySet().forEach((s) -> {
+            valueSet.add(dataLabels.get(s));
+        });
+
+        metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n");
+        metadata.append("The labels are: \n").append(valueSet.toString());
+
+        return metadata.toString();
     }
 
 //    private void averageY(XYChart<Number, Number> chart) {
@@ -196,6 +224,4 @@ public final class TSDProcessor {
 //            }
 //
 //        }
-
-    
 }

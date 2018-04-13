@@ -10,9 +10,9 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.LineChart;
@@ -60,10 +60,15 @@ public final class AppUI extends UITemplate {
     private boolean hasNewText;     // whether or not the text area has any new data since last display
     private CheckBox checkBox;
 
+    SimpleStringProperty metaData;
+
+    public void setMetaData(String property) {
+        this.metaData.set(property);
+    }
+
     //The boolean property marking whether or not the leftSide of my layout should be visible.
     SimpleIntegerProperty leftSide;
     BooleanProperty toggleSwitchIsOn;
-    
 
     public void setToggleSwitchIsOn(boolean property) {
         this.toggleSwitchIsOn.set(property);
@@ -90,6 +95,7 @@ public final class AppUI extends UITemplate {
         this.applicationTemplate = applicationTemplate;
         leftSide = new SimpleIntegerProperty();
         toggleSwitchIsOn = new SimpleBooleanProperty(false);
+        metaData = new SimpleStringProperty();
     }
 
     @Override
@@ -158,7 +164,7 @@ public final class AppUI extends UITemplate {
         leftPanel.setPadding(new Insets(10));
 
         VBox.setVgrow(leftPanel, Priority.ALWAYS);
-        leftPanel.setMaxSize(windowWidth * 0.29, windowHeight * 0.3);
+        leftPanel.setMaxSize(windowWidth * 0.29, windowHeight);
         leftPanel.setMinSize(windowWidth * 0.29, windowHeight * 0.3);
 
         Text leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
@@ -177,35 +183,49 @@ public final class AppUI extends UITemplate {
         processButtonsBox.setHgrow(processButtonsBox, Priority.ALWAYS);
         processButtonsBox.getChildren().addAll(toggleSwitch(buttonBody), toggleText);
 
+        HBox metaDataBox = new HBox();
+        Text metaDataInfo = new Text();
+        metaDataInfo.getStyleClass().add("md-text");
+        metaDataInfo.setText(metaData.get());
+        metaDataBox.getChildren().add(metaDataInfo);
+
         //Add the textArea, leftPanelTitle and processbuttonsBox to leftPanel.
-        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox);
+        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox);
 
         leftPanel.setVisible(false);
 
+        //Change Listener on the string metaData value
+        metaData.addListener((obs, oldState, newState) -> {
+            metaDataInfo.setText(newState);
+
+        });
+
         // Change Listener on the boolean variable leftSide
         leftSide.addListener((observable, oldValue, newValue) -> {
+
             
-             if (newValue.intValue() == 2){
-                leftPanel.getChildren().remove(processButtonsBox);
+            // 2 is for loadData
+            if (newValue.intValue() == 2) {
+                //hide the processButtonsBox
+                processButtonsBox.setVisible(false);
                 toggleSwitchIsOn.set(false);
                 textArea.setEditable(false);
                 textArea.setStyle("-fx-control-inner-background: #D3D3D3");
                 newButton.setDisable(false);
-                
-             }
-             
-            else if (newValue.intValue() == 3){ 
-                if(!leftPanel.getChildren().contains(processButtonsBox))
-                    leftPanel.getChildren().add(processButtonsBox);
-                
+
+            } //3 is for newData
+            else if (newValue.intValue() == 3) {
+                //show the processButtonsBox
+                processButtonsBox.setVisible(true);
+                metaData.set(null);
                 toggleSwitchIsOn.set(true);
                 textArea.setStyle(null);
                 textArea.setEditable(true);
-                
+
             }
-           
+
             leftPanel.setVisible(true);
-            
+
         });
 
         StackPane rightPanel = new StackPane(chart);
@@ -251,42 +271,42 @@ public final class AppUI extends UITemplate {
         });
     }
 
-    private void setDisplayButtonActions() {
-        displayButton.setOnAction(event -> {
-            if (hasNewText) {
-                try {
-                    chart.getData().clear();
-                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
-                    dataComponent.clear();
-                    dataComponent.loadData(textArea.getText());
-                    dataComponent.displayData();
-
-                    if (chart.getData().isEmpty()) {
-                        scrnshotButton.setDisable(true);
-                    } else {
-                        scrnshotButton.setDisable(false);
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-            hasNewText = false;
-        });
-    }
-
-    private void setCheckBoxAction() {
-        checkBox.setOnAction(event -> {
-            if (checkBox.isSelected()) {
-                textArea.setEditable(false);
-                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
-            } else {
-                textArea.setEditable(true);
-                textArea.setStyle(null);
-            }
-        });
-    }
+//    private void setDisplayButtonActions() {
+//        displayButton.setOnAction(event -> {
+//            if (hasNewText) {
+//                try {
+//                    chart.getData().clear();
+//                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+//                    dataComponent.clear();
+//                    dataComponent.loadData(textArea.getText());
+//                    dataComponent.displayData();
+//
+//                    if (chart.getData().isEmpty()) {
+//                        scrnshotButton.setDisable(true);
+//                    } else {
+//                        scrnshotButton.setDisable(false);
+//                    }
+//
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//            hasNewText = false;
+//        });
+//    }
+//
+//    private void setCheckBoxAction() {
+//        checkBox.setOnAction(event -> {
+//            if (checkBox.isSelected()) {
+//                textArea.setEditable(false);
+//                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
+//            } else {
+//                textArea.setEditable(true);
+//                textArea.setStyle(null);
+//            }
+//        });
+//    }
 
     public Button getSaveButton() {
         return saveButton;
@@ -339,16 +359,16 @@ public final class AppUI extends UITemplate {
         fillAnimation.setShape(rectangle);
 
         toggleSwitchIsOn.addListener((obs, oldState, newState) -> {
-            boolean isOn = newState.booleanValue();
+            boolean isOn = newState;
             translateAnimation.setToX(isOn ? 50 - 25 : 0);
-            fillAnimation.setFromValue(isOn ? Color.WHITE : Color.LIGHTGREEN);
-            fillAnimation.setToValue(isOn ? Color.LIGHTGREEN : Color.WHITE);
+            fillAnimation.setFromValue(isOn ? Color.WHITE : Color.DODGERBLUE);
+            fillAnimation.setToValue(isOn ? Color.DODGERBLUE : Color.WHITE);
             animation.play();
-           
+
             if (isOn) {
                 textArea.setEditable(true);
                 textArea.setStyle(null);
-            } else if (leftSide.getValue()!=2) {
+            } else if (leftSide.getValue() != 2) {
                 textArea.setEditable(false);
                 textArea.setStyle("-fx-control-inner-background: #D3D3D3");
 
@@ -358,12 +378,12 @@ public final class AppUI extends UITemplate {
                     AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
                     dataComponent.clear();
                     dataComponent.loadData(textArea.getText());
-                    
+                    leftSide.setValue(4);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-           
+
         });
 
         buttonBody.setOnMouseClicked(event -> {
