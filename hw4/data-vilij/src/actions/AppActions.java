@@ -67,6 +67,7 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleNewRequest() {
+        ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(3);
         try {
             if (!isUnsaved.get() || promptToSave()) {
                 applicationTemplate.getDataComponent().clear();
@@ -246,4 +247,5 @@ public final class AppActions implements ActionComponent {
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT.name()).substring(1), selected);
         }
     }
+
 }

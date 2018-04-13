@@ -2,7 +2,17 @@ package ui;
 
 import actions.AppActions;
 import dataprocessors.AppData;
+import javafx.scene.shape.Rectangle;
 import static java.io.File.separator;
+import javafx.util.Duration;
+import javafx.animation.FillTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.LineChart;
@@ -22,6 +32,9 @@ import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
 import javafx.scene.control.CheckBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_FILENAME;
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
@@ -47,6 +60,23 @@ public final class AppUI extends UITemplate {
     private boolean hasNewText;     // whether or not the text area has any new data since last display
     private CheckBox checkBox;
 
+    //The boolean property marking whether or not the leftSide of my layout should be visible.
+    SimpleIntegerProperty leftSide;
+    BooleanProperty toggleSwitchIsOn;
+    
+
+    public void setToggleSwitchIsOn(boolean property) {
+        this.toggleSwitchIsOn.set(property);
+    }
+
+    public BooleanProperty switchedOnProperty() {
+        return toggleSwitchIsOn;
+    }
+
+    public void setLeftSideProperty(int value) {
+        this.leftSide.setValue(value);
+    }
+
     public void setHasNewText(boolean hasNewText) {
         this.hasNewText = hasNewText;
     }
@@ -58,6 +88,8 @@ public final class AppUI extends UITemplate {
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
         this.applicationTemplate = applicationTemplate;
+        leftSide = new SimpleIntegerProperty();
+        toggleSwitchIsOn = new SimpleBooleanProperty(false);
     }
 
     @Override
@@ -83,6 +115,7 @@ public final class AppUI extends UITemplate {
         scrnshotButton = setToolbarButton(scrnshoticonPath,
                 manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()),
                 true);
+        newButton.setDisable(false);
         toolBar.getItems().add(scrnshotButton);
     }
 
@@ -135,13 +168,45 @@ public final class AppUI extends UITemplate {
 
         textArea = new TextArea();
 
+        //Following is the code that adds Toogle like switch to processButtonBOx
         HBox processButtonsBox = new HBox();
-        displayButton = new Button(manager.getPropertyValue(AppPropertyTypes.DISPLAY_BUTTON_TEXT.name()));
-        checkBox = new CheckBox(manager.getPropertyValue(AppPropertyTypes.CHECKBOX_LABEL.name()));
-        HBox.setHgrow(processButtonsBox, Priority.ALWAYS);
-        processButtonsBox.getChildren().addAll(displayButton, checkBox);
+        Pane buttonBody = new Pane();
+        Text toggleText = new Text();
+        toggleText.getStyleClass().add("tb-text");
+        toggleText.textProperty().bind(Bindings.when(switchedOnProperty()).then("EDIT").otherwise("DONE"));
+        processButtonsBox.setHgrow(processButtonsBox, Priority.ALWAYS);
+        processButtonsBox.getChildren().addAll(toggleSwitch(buttonBody), toggleText);
 
+        //Add the textArea, leftPanelTitle and processbuttonsBox to leftPanel.
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox);
+
+        leftPanel.setVisible(false);
+
+        // Change Listener on the boolean variable leftSide
+        leftSide.addListener((observable, oldValue, newValue) -> {
+            
+             if (newValue.intValue() == 2){
+                leftPanel.getChildren().remove(processButtonsBox);
+                toggleSwitchIsOn.set(false);
+                textArea.setEditable(false);
+                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
+                newButton.setDisable(false);
+                
+             }
+             
+            else if (newValue.intValue() == 3){ 
+                if(!leftPanel.getChildren().contains(processButtonsBox))
+                    leftPanel.getChildren().add(processButtonsBox);
+                
+                toggleSwitchIsOn.set(true);
+                textArea.setStyle(null);
+                textArea.setEditable(true);
+                
+            }
+           
+            leftPanel.setVisible(true);
+            
+        });
 
         StackPane rightPanel = new StackPane(chart);
         rightPanel.setMaxSize(windowWidth * 0.69, windowHeight * 0.69);
@@ -159,8 +224,8 @@ public final class AppUI extends UITemplate {
 
     private void setWorkspaceActions() {
         setTextAreaActions();
-        setDisplayButtonActions();
-        setCheckBoxAction();
+        //setDisplayButtonActions();
+        //setCheckBoxAction();
     }
 
     //ActionLister for textArea. When the user releases the key this action is triggered.
@@ -230,6 +295,80 @@ public final class AppUI extends UITemplate {
     public Button getNewButton() {
         return newButton;
     }
-    
-   
+
+    /**
+     * This is the method that create the layout for the toggleSwitch
+     *
+     * @param buttonBody - A pane passed from the layout method.
+     * @return - updates the buttonBody Pane.
+     */
+    private Pane toggleSwitch(Pane buttonBody) {
+
+        Circle circle = new Circle(12.5);
+        circle.setCenterX(12.5);
+        circle.setCenterY(12.5);
+        circle.getStyleClass().add("tb-circle");
+
+        Rectangle rectangle = new Rectangle(50, 25);
+        rectangle.getStyleClass().add("tb-rectangle");
+
+        buttonBody.getChildren().addAll(rectangle, circle);
+
+        setToggleSwitchAction(circle, rectangle, buttonBody);
+
+        return buttonBody;
+
+    }
+
+    /**
+     * This is the method that sets the actionHandler and actionListener for the
+     * toggleSwitch. This method is also responsible for the animation.
+     *
+     * @param circle
+     * @param rectangle
+     * @param buttonBody
+     */
+    private void setToggleSwitchAction(Circle circle, Rectangle rectangle, Pane buttonBody) {
+
+        TranslateTransition translateAnimation = new TranslateTransition(Duration.seconds(0.25));
+        FillTransition fillAnimation = new FillTransition(Duration.seconds(0.25));
+        ParallelTransition animation = new ParallelTransition(translateAnimation, fillAnimation);
+
+        translateAnimation.setNode(circle);
+
+        fillAnimation.setShape(rectangle);
+
+        toggleSwitchIsOn.addListener((obs, oldState, newState) -> {
+            boolean isOn = newState.booleanValue();
+            translateAnimation.setToX(isOn ? 50 - 25 : 0);
+            fillAnimation.setFromValue(isOn ? Color.WHITE : Color.LIGHTGREEN);
+            fillAnimation.setToValue(isOn ? Color.LIGHTGREEN : Color.WHITE);
+            animation.play();
+           
+            if (isOn) {
+                textArea.setEditable(true);
+                textArea.setStyle(null);
+            } else if (leftSide.getValue()!=2) {
+                textArea.setEditable(false);
+                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
+
+                //when the edit is completed this part sends data to AppData to check if the data is valid.
+                try {
+                    chart.getData().clear();
+                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+                    dataComponent.clear();
+                    dataComponent.loadData(textArea.getText());
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+           
+        });
+
+        buttonBody.setOnMouseClicked(event -> {
+            toggleSwitchIsOn.set(!toggleSwitchIsOn.get());
+        });
+    }
+
 }

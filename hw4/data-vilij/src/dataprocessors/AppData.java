@@ -25,11 +25,14 @@ import java.nio.file.Path;
 public class AppData implements DataComponent {
 
     private TSDProcessor processor;
+
     private ApplicationTemplate applicationTemplate;
+    private boolean success;
 
     public AppData(ApplicationTemplate applicationTemplate) {
         this.processor = new TSDProcessor(applicationTemplate);
         this.applicationTemplate = applicationTemplate;
+        success = false;
     }
 
     @Override
@@ -41,13 +44,14 @@ public class AppData implements DataComponent {
                     .forEach(list -> {
                         text.append(list + "\n");
                     });
-            if (((AppUI) applicationTemplate.getUIComponent()).getTextArea().isEditable()) {
-                ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(text.toString());
-                ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
-                ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+            processor.clear();
+            loadData(text.toString());
+
+            if (success) {
+                updateGUI(text.toString());
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
@@ -56,6 +60,7 @@ public class AppData implements DataComponent {
         try {
             processor.processString(dataString);
             ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
+            success = true;
         } catch (Exception e) {
             ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
             PropertyManager manager = applicationTemplate.manager;
@@ -91,5 +96,24 @@ public class AppData implements DataComponent {
 
     private String Parse(String dataString) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * This is a helper method to update the GUI
+     *
+     * @param text
+     */
+    private void updateGUI(String text) {
+        ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(2);
+
+        StringBuilder displayText = new StringBuilder();
+        String[] token = text.split("\\n");
+        for (int i = 0; i < 10; i++) {
+            displayText.append(token[i] + "\n");
+        }
+
+        ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(displayText.toString());
+        ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+
     }
 }

@@ -98,15 +98,7 @@ public final class TSDProcessor {
      * @param chart the specified chart
      */
     void toChartData(XYChart<Number, Number> chart) {
-        Set<String> labels;
-
-        if (dataLabels.size() <= 10) {
-            labels = new HashSet<>(dataLabels.values());
-        } else {
-            displayFilter();
-            labels = new HashSet<>(dataLabels.values());
-        }
-
+        Set<String> labels = new HashSet<>(dataLabels.values());
         for (String label : labels) {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
             series.setName(label);
@@ -116,9 +108,6 @@ public final class TSDProcessor {
             });
             chart.getData().add(series);
         }
-
-        averageY(chart);
-
     }
 
     void clear() {
@@ -162,51 +151,51 @@ public final class TSDProcessor {
         dialog.show(errTitle, errMsg);
     }
 
-    private void averageY(XYChart<Number, Number> chart) {
-        double sum = 0;
-        int count = 0;
-        double minX = Integer.MAX_VALUE;
-        double maxX = Integer.MIN_VALUE;
-        for (int i = 0; i < chart.getData().size(); i++) {
-            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
+//    private void averageY(XYChart<Number, Number> chart) {
+//        double sum = 0;
+//        int count = 0;
+//        double minX = Integer.MAX_VALUE;
+//        double maxX = Integer.MIN_VALUE;
+//        for (int i = 0; i < chart.getData().size(); i++) {
+//            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
+//
+//                if (minX > (Double) chart.getData().get(i).getData().get(j).getXValue()) {
+//                    minX = (Double) chart.getData().get(i).getData().get(j).getXValue();
+//                }
+//
+//                if (maxX < (Double) chart.getData().get(i).getData().get(j).getXValue()) {
+//                    maxX = (Double) chart.getData().get(i).getData().get(j).getXValue();
+//                }
+//
+//                sum += (Double) chart.getData().get(i).getData().get(j).getYValue();
+//                count++;
+//            }
+//
+//        }
+//
+//        XYChart.Series<Number, Number> averageY = new XYChart.Series<>();
+//        averageY.getData().add(new XYChart.Data<>(minX, (sum / count)));
+//        averageY.getData().add(new XYChart.Data<>(maxX, (sum / count)));
+//        averageY.setName("Average Y Value");
+//
+//        chart.getData().add(averageY);
+//
+//        for (int i = 0; i < chart.getData().size(); i++) {
+//            if (i == chart.getData().size() - 1) {
+//                break;
+//            }
+//
+//            chart.getData().get(i).getNode().setVisible(false);
+//
+//        }
+//
+//        for (int i = 0; i < chart.getData().size(); i++) {
+//            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
+//                Tooltip.install(chart.getData().get(i).getData().get(j).getNode(), new Tooltip(chart.getData().get(i).getData().get(j).getXValue().toString()+", " +chart.getData().get(i).getData().get(j).getYValue().toString()));
+//               
+//            }
+//
+//        }
 
-                if (minX > (Double) chart.getData().get(i).getData().get(j).getXValue()) {
-                    minX = (Double) chart.getData().get(i).getData().get(j).getXValue();
-                }
-
-                if (maxX < (Double) chart.getData().get(i).getData().get(j).getXValue()) {
-                    maxX = (Double) chart.getData().get(i).getData().get(j).getXValue();
-                }
-
-                sum += (Double) chart.getData().get(i).getData().get(j).getYValue();
-                count++;
-            }
-
-        }
-
-        XYChart.Series<Number, Number> averageY = new XYChart.Series<>();
-        averageY.getData().add(new XYChart.Data<>(minX, (sum / count)));
-        averageY.getData().add(new XYChart.Data<>(maxX, (sum / count)));
-        averageY.setName("Average Y Value");
-
-        chart.getData().add(averageY);
-
-        for (int i = 0; i < chart.getData().size(); i++) {
-            if (i == chart.getData().size() - 1) {
-                break;
-            }
-
-            chart.getData().get(i).getNode().setVisible(false);
-
-        }
-
-        for (int i = 0; i < chart.getData().size(); i++) {
-            for (int j = 0; j < chart.getData().get(i).getData().size(); j++) {
-                Tooltip.install(chart.getData().get(i).getData().get(j).getNode(), new Tooltip(chart.getData().get(i).getData().get(j).getXValue().toString()+", " +chart.getData().get(i).getData().get(j).getYValue().toString()));
-               
-            }
-
-        }
-
-    }
+    
 }
