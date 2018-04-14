@@ -53,7 +53,7 @@ public final class AppUI extends UITemplate {
      * The application to which this class of actions belongs.
      */
     ApplicationTemplate applicationTemplate;
-    
+
     @SuppressWarnings("FieldCanBeLocal")
     private Button scrnshotButton; // toolbar button to take a screenshot of the data
     private LineChart<Number, Number> chart;          // the chart where data will be displayed
@@ -64,62 +64,62 @@ public final class AppUI extends UITemplate {
     private Button clustering;
     private RadioButton radioButton;
     private Button configuration;
-    
+
     SimpleStringProperty metaData;
 
     //The boolean property marking whether or not the leftSide of my layout should be visible.
     SimpleIntegerProperty leftSide;
-    
+
     BooleanProperty toggleSwitchIsOn;
     BooleanProperty showAlgorithmType;
     BooleanProperty bothAlgorithm;
     BooleanProperty showSubAlgorithms;
     BooleanProperty showRun;
-    
+
     public void setShowRun(boolean property) {
         this.showRun.set(property);
     }
-    
+
     public void setShowSubAlgorithms(boolean showSubAlgorithms) {
         this.showSubAlgorithms.set(showSubAlgorithms);
     }
-    
+
     public void setBothAlgorithm(boolean property) {
         this.bothAlgorithm.set(property);
     }
-    
+
     public void setShowAlgorithmType(boolean property) {
         this.showAlgorithmType.set(property);
     }
-    
+
     public SimpleIntegerProperty getLeftSide() {
         return leftSide;
     }
-    
+
     public void setToggleSwitchIsOn(boolean property) {
         this.toggleSwitchIsOn.set(property);
     }
-    
+
     public BooleanProperty switchedOnProperty() {
         return toggleSwitchIsOn;
     }
-    
+
     public void setMetaData(String property) {
         this.metaData.set(property);
     }
-    
+
     public void setLeftSideProperty(int value) {
         this.leftSide.setValue(value);
     }
-    
+
     public void setHasNewText(boolean hasNewText) {
         this.hasNewText = hasNewText;
     }
-    
+
     public LineChart<Number, Number> getChart() {
         return chart;
     }
-    
+
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
         this.applicationTemplate = applicationTemplate;
@@ -131,7 +131,7 @@ public final class AppUI extends UITemplate {
         showSubAlgorithms = new SimpleBooleanProperty(true);
         showRun = new SimpleBooleanProperty(true);
     }
-    
+
     @Override
     protected void setResourcePaths(ApplicationTemplate applicationTemplate) {
         super.setResourcePaths(applicationTemplate);
@@ -141,7 +141,7 @@ public final class AppUI extends UITemplate {
                 manager.getPropertyValue(CSS_RESOURCE_PATH.name()),
                 manager.getPropertyValue(CSS_RESOURCE_FILENAME.name()));
     }
-    
+
     @Override
     protected void setToolBar(ApplicationTemplate applicationTemplate) {
         super.setToolBar(applicationTemplate);
@@ -158,7 +158,7 @@ public final class AppUI extends UITemplate {
         newButton.setDisable(false);
         toolBar.getItems().add(scrnshotButton);
     }
-    
+
     @Override
     protected void setToolbarHandlers(ApplicationTemplate applicationTemplate) {
         applicationTemplate.setActionComponent(new AppActions(applicationTemplate));
@@ -169,43 +169,43 @@ public final class AppUI extends UITemplate {
         printButton.setOnAction(e -> applicationTemplate.getActionComponent().handlePrintRequest());
         scrnshotButton.setOnAction(e -> ((AppActions) applicationTemplate.getActionComponent()).handleScreenshotRequest());
     }
-    
+
     @Override
     public void initialize() {
         layout();
         setWorkspaceActions();
     }
-    
+
     @Override
     public void clear() {
         textArea.clear();
         chart.getData().clear();
     }
-    
+
     public TextArea getTextArea() {
         return textArea;
     }
-    
+
     private void layout() {
         PropertyManager manager = applicationTemplate.manager;
         NumberAxis xAxis = new NumberAxis();
         NumberAxis yAxis = new NumberAxis();
         chart = new LineChart<>(xAxis, yAxis);
         chart.setTitle(manager.getPropertyValue(AppPropertyTypes.CHART_TITLE.name()));
-        
+
         VBox leftPanel = new VBox(8);
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPadding(new Insets(10));
-        
+
         VBox.setVgrow(leftPanel, Priority.ALWAYS);
         leftPanel.setMaxSize(windowWidth * 0.29, windowHeight);
         leftPanel.setMinSize(windowWidth * 0.29, windowHeight * 0.3);
-        
+
         Text leftPanelTitle = new Text(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLE.name()));
         String fontname = manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLEFONT.name());
         Double fontsize = Double.parseDouble(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLESIZE.name()));
         leftPanelTitle.setFont(Font.font(fontname, fontsize));
-        
+
         textArea = new TextArea();
 
         //Following is the code that adds Toogle like switch to processButtonBOx
@@ -236,7 +236,7 @@ public final class AppUI extends UITemplate {
         classification.getStyleClass().add("ab-button");
         clustering.getStyleClass().add("ab-button");
         algorithmBox.setSpacing(10);
-        
+
         algorithmBox.getChildren().addAll(algorithmBoxTitle, classification, clustering);
 
         //SubAlgorithmModule
@@ -251,24 +251,23 @@ public final class AppUI extends UITemplate {
                     manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
             String configPath = String.join(separator,
                     iconsPath, "config.png");
-            
+
             ImageView imageView = new ImageView(configPath);
             imageView.setFitHeight(20);
             imageView.setFitWidth(20);
             configuration.setGraphic(imageView);
             radioButton.setOnMouseClicked(e -> {
                 showRun.set(true);
-                
             });
-            
+
             radioButton.setToggleGroup(group);
-            
+
             listOfAlgorithms.getChildren().addAll(radioButton, configuration);
             listOfAlgorithms.setSpacing(10);
             subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
             ;
         }
-        
+
         subAlgorithmModule.setSpacing(20);
 
         //Run Button
@@ -279,21 +278,20 @@ public final class AppUI extends UITemplate {
                 manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
         String configPath = String.join(separator,
                 iconsPath, "play-button.png");
-        
+
         ImageView imageView = new ImageView(configPath);
-        
+
         imageView.setFitHeight(25);
         imageView.setFitWidth(25);
         run.setGraphic(imageView);
-        
+
         runBox.getChildren().add(run);
 
         //Add the textArea, leftPanelTitle and processbuttonsBox to leftPanel.
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox, algorithmBox, subAlgorithmModule, runBox);
-        
-        leftPanel.setVisible(
-                false);
-        
+
+        leftPanel.setVisible(false);
+
         showRun.addListener((obs, oldState, newState) -> {
             if (newState) {
                 runBox.setVisible(true);
@@ -302,18 +300,18 @@ public final class AppUI extends UITemplate {
             }
         }
         );
-        
+
         showSubAlgorithms.addListener((obs, oldState, newState) -> {
             if (newState) {
                 subAlgorithmModule.setVisible(true);
             } else {
                 subAlgorithmModule.setVisible(false);
                 showRun.set(false);
-                
+
             }
         }
         );
-        
+
         showAlgorithmType.addListener((obs, oldState, newState) -> {
             boolean check = newState;
             if (check) {
@@ -321,22 +319,22 @@ public final class AppUI extends UITemplate {
                 showSubAlgorithms.set(false);
             } else {
                 algorithmBox.setVisible(true);
-                
+
             }
         });
 
         //Change Listener on the string metaData value
         metaData.addListener((obs, oldState, newState) -> {
             metaDataInfo.setText(newState);
-            
+
             if (metaDataInfo.getText().isEmpty()) {
                 showAlgorithmType.set(true);
             } else {
                 showAlgorithmType.set(false);
             }
-            
+
         });
-        
+
         bothAlgorithm.addListener((obs, oldState, newState) -> {
             if (newState) {
                 classification.setVisible(true);
@@ -347,7 +345,7 @@ public final class AppUI extends UITemplate {
 
         // Change Listener on the boolean variable leftSide
         leftSide.addListener((observable, oldValue, newValue) -> {
-            
+
             switch (newValue.intValue()) {
 
                 // 2 is for loadData
@@ -380,29 +378,29 @@ public final class AppUI extends UITemplate {
                 default:
                     break;
             }
-            
+
         });
-        
+
         StackPane rightPanel = new StackPane(chart);
-        
+
         rightPanel.setMaxSize(windowWidth
                 * 0.69, windowHeight * 0.69);
         rightPanel.setMinSize(windowWidth
                 * 0.69, windowHeight * 0.69);
         StackPane.setAlignment(rightPanel, Pos.CENTER);
-        
+
         workspace = new HBox(leftPanel, rightPanel);
-        
+
         HBox.setHgrow(workspace, Priority.ALWAYS);
-        
+
         appPane.getChildren()
                 .add(workspace);
         VBox.setVgrow(appPane, Priority.ALWAYS);
-        
+
         applicationTemplate.getUIComponent()
                 .getPrimaryScene().getStylesheets().add(cssPath);
     }
-    
+
     private void setWorkspaceActions() {
         setTextAreaActions();
         setClassificationActions();
@@ -410,13 +408,13 @@ public final class AppUI extends UITemplate {
         //setDisplayButtonActions();
         //setCheckBoxAction();
     }
-    
+
     private void setClassificationActions() {
         classification.setOnMouseClicked(e -> {
             showSubAlgorithms.set(true);
         });
     }
-    
+
     private void setClusteringActions() {
         clustering.setOnMouseClicked(e -> {
             showSubAlgorithms.set(true);
@@ -427,22 +425,22 @@ public final class AppUI extends UITemplate {
     // It checks if there is any text in the application then the new and save button's are enabled.
     // When the text is empty then the save and new buttons are disabled.
     private void setTextAreaActions() {
-        
+
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-            
+
             if (!newValue.equals(oldValue) && !newValue.isEmpty()) {
                 hasNewText = true;
                 newButton.setDisable(false);
                 saveButton.setDisable(false);
                 ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(true);
-                
+
             } else {
                 hasNewText = false;
                 newButton.setDisable(true);
                 saveButton.setDisable(true);
                 ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
             }
-            
+
         });
     }
 
@@ -485,7 +483,7 @@ public final class AppUI extends UITemplate {
     public Button getSaveButton() {
         return saveButton;
     }
-    
+
     public Button getNewButton() {
         return newButton;
     }
@@ -497,21 +495,21 @@ public final class AppUI extends UITemplate {
      * @return - updates the buttonBody Pane.
      */
     private Pane toggleSwitch(Pane buttonBody) {
-        
+
         Circle circle = new Circle(12.5);
         circle.setCenterX(12.5);
         circle.setCenterY(12.5);
         circle.getStyleClass().add("tb-circle");
-        
+
         Rectangle rectangle = new Rectangle(50, 25);
         rectangle.getStyleClass().add("tb-rectangle");
-        
+
         buttonBody.getChildren().addAll(rectangle, circle);
-        
+
         setToggleSwitchAction(circle, rectangle, buttonBody);
-        
+
         return buttonBody;
-        
+
     }
 
     /**
@@ -523,15 +521,15 @@ public final class AppUI extends UITemplate {
      * @param buttonBody
      */
     private void setToggleSwitchAction(Circle circle, Rectangle rectangle, Pane buttonBody) {
-        
+
         TranslateTransition translateAnimation = new TranslateTransition(Duration.seconds(0.25));
         FillTransition fillAnimation = new FillTransition(Duration.seconds(0.25));
         ParallelTransition animation = new ParallelTransition(translateAnimation, fillAnimation);
-        
+
         translateAnimation.setNode(circle);
-        
+
         fillAnimation.setShape(rectangle);
-        
+
         toggleSwitchIsOn.addListener((obs, oldState, newState) -> {
             metaData.set("");
             boolean isOn = newState;
@@ -539,7 +537,7 @@ public final class AppUI extends UITemplate {
             fillAnimation.setFromValue(isOn ? Color.WHITE : Color.DODGERBLUE);
             fillAnimation.setToValue(isOn ? Color.DODGERBLUE : Color.WHITE);
             animation.play();
-            
+
             if (isOn) {
                 textArea.setEditable(true);
                 textArea.setStyle(null);
@@ -552,14 +550,14 @@ public final class AppUI extends UITemplate {
                 AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
                 dataComponent.clear();
                 dataComponent.loadData(textArea.getText());
-                
+
             }
-            
+
         });
-        
+
         buttonBody.setOnMouseClicked(event -> {
             toggleSwitchIsOn.set(!toggleSwitchIsOn.get());
         });
     }
-    
+
 }
