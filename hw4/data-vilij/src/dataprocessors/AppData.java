@@ -98,13 +98,16 @@ public class AppData implements DataComponent {
      */
     private void updateGUI(String text, Path dataFilePath) {
 
-        ((AppUI) applicationTemplate.getUIComponent()).setMetaData(processor.metaData(dataFilePath));
-
         ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(2);
+        ((AppUI) applicationTemplate.getUIComponent()).setMetaData(processor.metaData(dataFilePath));
+        ((AppUI) (applicationTemplate.getUIComponent())).setShowSubAlgorithms(false);
 
         StringBuilder displayText = new StringBuilder();
         String[] token = text.split("\\n");
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < token.length; i++) {
+            if (i == 10) {
+                break;
+            }
             displayText.append(token[i]).append("\n");
         }
 
@@ -123,6 +126,11 @@ public class AppData implements DataComponent {
         ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
         ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
         processor.clear();
-        ((AppUI) applicationTemplate.getUIComponent()).setMetaData(null);
+        ((AppUI) applicationTemplate.getUIComponent()).setMetaData("");
+        ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
+
+        if (((AppUI) applicationTemplate.getUIComponent()).getLeftSide().getValue() == 2) {
+            ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(4);
+        }
     }
 }

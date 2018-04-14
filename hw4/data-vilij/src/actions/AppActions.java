@@ -76,6 +76,7 @@ public final class AppActions implements ActionComponent {
                 dataFilePath = null;
                 ((AppUI) applicationTemplate.getUIComponent()).getNewButton().setDisable(true);
                 ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+                ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
             }
         } catch (IOException e) {
             errorHandlingHelper();

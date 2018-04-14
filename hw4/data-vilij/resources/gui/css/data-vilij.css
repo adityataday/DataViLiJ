@@ -76,4 +76,14 @@ and open the template in the editor.
     -fx-fill: BLACK;
 }
 
+.ab-text{
+    -fx-font: 20px "Sans Serif"; 
+    -fx-fill: BLACK;
+}
+
+.ab-button{
+    -fx-max-height: 200;
+    -fx-max-width: 100;
+}
+
 

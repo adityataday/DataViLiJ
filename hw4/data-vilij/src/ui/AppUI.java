@@ -18,7 +18,9 @@ import javafx.geometry.Pos;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -31,7 +33,6 @@ import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
-import javafx.scene.control.CheckBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -58,17 +59,36 @@ public final class AppUI extends UITemplate {
     private Button displayButton;  // workspace button to display data on the chart
     private TextArea textArea;       // text area for new data input
     private boolean hasNewText;     // whether or not the text area has any new data since last display
-    private CheckBox checkBox;
+    private Button classification;
+    private Button clustering;
+    private RadioButton radioButton;
+    private Button configuration;
 
     SimpleStringProperty metaData;
 
-    public void setMetaData(String property) {
-        this.metaData.set(property);
-    }
-
     //The boolean property marking whether or not the leftSide of my layout should be visible.
     SimpleIntegerProperty leftSide;
+
     BooleanProperty toggleSwitchIsOn;
+    BooleanProperty showAlgorithmType;
+    BooleanProperty bothAlgorithm;
+    BooleanProperty showSubAlgorithms;
+
+    public void setShowSubAlgorithms(boolean showSubAlgorithms) {
+        this.showSubAlgorithms.set(showSubAlgorithms);
+    }
+
+    public void setBothAlgorithm(boolean property) {
+        this.bothAlgorithm.set(property);
+    }
+
+    public void setShowAlgorithmType(boolean property) {
+        this.showAlgorithmType.set(property);
+    }
+
+    public SimpleIntegerProperty getLeftSide() {
+        return leftSide;
+    }
 
     public void setToggleSwitchIsOn(boolean property) {
         this.toggleSwitchIsOn.set(property);
@@ -76,6 +96,10 @@ public final class AppUI extends UITemplate {
 
     public BooleanProperty switchedOnProperty() {
         return toggleSwitchIsOn;
+    }
+
+    public void setMetaData(String property) {
+        this.metaData.set(property);
     }
 
     public void setLeftSideProperty(int value) {
@@ -96,6 +120,9 @@ public final class AppUI extends UITemplate {
         leftSide = new SimpleIntegerProperty();
         toggleSwitchIsOn = new SimpleBooleanProperty(false);
         metaData = new SimpleStringProperty();
+        showAlgorithmType = new SimpleBooleanProperty();
+        bothAlgorithm = new SimpleBooleanProperty(true);
+        showSubAlgorithms = new SimpleBooleanProperty(true);
     }
 
     @Override
@@ -183,48 +210,132 @@ public final class AppUI extends UITemplate {
         processButtonsBox.setHgrow(processButtonsBox, Priority.ALWAYS);
         processButtonsBox.getChildren().addAll(toggleSwitch(buttonBody), toggleText);
 
+        //MetaData Info
         HBox metaDataBox = new HBox();
         Text metaDataInfo = new Text();
         metaDataInfo.getStyleClass().add("md-text");
         metaDataInfo.setText(metaData.get());
         metaDataBox.getChildren().add(metaDataInfo);
 
+        //Adding Algorithm buttons to the leftPanel
+        //Intializing the algorithmBox
+        VBox algorithmBox = new VBox();
+        Text algorithmBoxTitle = new Text("Algorithm Type");
+        classification = new Button("Classification");
+        clustering = new Button("Clustering");
+
+        //Styleing 
+        algorithmBoxTitle.getStyleClass().add("ab-text");
+        classification.getStyleClass().add("ab-button");
+        clustering.getStyleClass().add("ab-button");
+        algorithmBox.setSpacing(10);
+
+        algorithmBox.getChildren().addAll(algorithmBoxTitle, classification, clustering);
+
+        //SubAlgorithmModule
+        VBox subAlgorithmModule = new VBox();
+        for (int i = 1; i <= 3; i++) {
+            HBox listOfAlgorithms = new HBox();
+            radioButton = new RadioButton("Algorithm " + i);
+            configuration = new Button();
+            String iconsPath = "/" + String.join(separator,
+                    manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
+                    manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
+            String configPath = String.join(separator,
+                    iconsPath, "config.png");
+
+            ImageView imageView = new ImageView(configPath);
+            imageView.setFitHeight(20);
+            imageView.setFitWidth(20);
+            configuration.setGraphic(imageView);
+            //configuration.setMaxSize(5, 5);
+            listOfAlgorithms.getChildren().addAll(radioButton, configuration);
+            listOfAlgorithms.setSpacing(10);
+            subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
+        }
+
+        subAlgorithmModule.setSpacing(20);
+        //subAlgorithmModule.setVisible(false);
+
         //Add the textArea, leftPanelTitle and processbuttonsBox to leftPanel.
-        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox);
+        leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox, algorithmBox, subAlgorithmModule);
 
         leftPanel.setVisible(false);
+
+        showSubAlgorithms.addListener((obs, oldState, newState) -> {
+            if (newState) {
+                subAlgorithmModule.setVisible(true);
+            } else {
+                subAlgorithmModule.setVisible(false);
+            }
+        });
+
+        showAlgorithmType.addListener((obs, oldState, newState) -> {
+            boolean check = newState;
+            if (check) {
+                algorithmBox.setVisible(false);
+            } else {
+                algorithmBox.setVisible(true);
+
+            }
+        });
 
         //Change Listener on the string metaData value
         metaData.addListener((obs, oldState, newState) -> {
             metaDataInfo.setText(newState);
 
+            if (metaDataInfo.getText().isEmpty()) {
+                showAlgorithmType.set(true);
+            } else {
+                showAlgorithmType.set(false);
+            }
+
+        });
+
+        bothAlgorithm.addListener((obs, oldState, newState) -> {
+            if (newState) {
+                classification.setVisible(true);
+            } else {
+                classification.setVisible(false);
+            }
         });
 
         // Change Listener on the boolean variable leftSide
         leftSide.addListener((observable, oldValue, newValue) -> {
 
-            
-            // 2 is for loadData
-            if (newValue.intValue() == 2) {
-                //hide the processButtonsBox
-                processButtonsBox.setVisible(false);
-                toggleSwitchIsOn.set(false);
-                textArea.setEditable(false);
-                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
-                newButton.setDisable(false);
+            switch (newValue.intValue()) {
 
-            } //3 is for newData
-            else if (newValue.intValue() == 3) {
-                //show the processButtonsBox
-                processButtonsBox.setVisible(true);
-                metaData.set(null);
-                toggleSwitchIsOn.set(true);
-                textArea.setStyle(null);
-                textArea.setEditable(true);
+                // 2 is for loadData
+                case 2:
+                    //hide the processButtonsBox
+                    toggleSwitchIsOn.set(false);
+                    metaData.set("");
+                    textArea.setEditable(false);
+                    textArea.setStyle("-fx-control-inner-background: #D3D3D3");
+                    newButton.setDisable(false);
+                    leftPanel.setVisible(true);
+                    processButtonsBox.setVisible(false);
+                    break;
 
+                //3 is for newData
+                case 3:
+                    //show the processButtonsBox
+                    metaData.set("");
+                    toggleSwitchIsOn.set(true);
+                    textArea.setStyle(null);
+                    textArea.setEditable(true);
+                    leftPanel.setVisible(true);
+                    processButtonsBox.setVisible(true);
+
+                    break;
+
+                //This is the case where we want to make the leftPanel invisible
+                case 4:
+                    leftPanel.setVisible(false);
+                    break;
+                default:
+                    break;
             }
-
-            leftPanel.setVisible(true);
 
         });
 
@@ -244,8 +355,22 @@ public final class AppUI extends UITemplate {
 
     private void setWorkspaceActions() {
         setTextAreaActions();
+        setClassificationActions();
+        setClusteringActions();
         //setDisplayButtonActions();
         //setCheckBoxAction();
+    }
+
+    private void setClassificationActions() {
+        classification.setOnMouseClicked(e -> {
+            showSubAlgorithms.set(true);
+        });
+    }
+
+    private void setClusteringActions() {
+        clustering.setOnMouseClicked(e -> {
+            showSubAlgorithms.set(true);
+        });
     }
 
     //ActionLister for textArea. When the user releases the key this action is triggered.
@@ -307,7 +432,6 @@ public final class AppUI extends UITemplate {
 //            }
 //        });
 //    }
-
     public Button getSaveButton() {
         return saveButton;
     }
@@ -359,6 +483,7 @@ public final class AppUI extends UITemplate {
         fillAnimation.setShape(rectangle);
 
         toggleSwitchIsOn.addListener((obs, oldState, newState) -> {
+            metaData.set("");
             boolean isOn = newState;
             translateAnimation.setToX(isOn ? 50 - 25 : 0);
             fillAnimation.setFromValue(isOn ? Color.WHITE : Color.DODGERBLUE);
@@ -373,15 +498,11 @@ public final class AppUI extends UITemplate {
                 textArea.setStyle("-fx-control-inner-background: #D3D3D3");
 
                 //when the edit is completed this part sends data to AppData to check if the data is valid.
-                try {
-                    chart.getData().clear();
-                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
-                    dataComponent.clear();
-                    dataComponent.loadData(textArea.getText());
-                    leftSide.setValue(4);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                chart.getData().clear();
+                AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+                dataComponent.clear();
+                dataComponent.loadData(textArea.getText());
+
             }
 
         });

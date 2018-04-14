@@ -12,6 +12,7 @@ import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_2;
+import ui.AppUI;
 import vilij.components.Dialog;
 import vilij.components.ErrorDialog;
 import vilij.propertymanager.PropertyManager;
@@ -160,6 +161,12 @@ public final class TSDProcessor {
             valueSet.add(dataLabels.get(s));
         });
 
+        if (valueSet.size() <= 2) {
+            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(true);
+        } else {
+            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(false);
+        }
+
         metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n").append(dataFilePath.toString());
         metadata.append("\nThe labels are: \n").append(valueSet.toString());
 
@@ -172,6 +179,12 @@ public final class TSDProcessor {
         dataLabels.keySet().forEach((s) -> {
             valueSet.add(dataLabels.get(s));
         });
+
+        if (valueSet.size() <= 2) {
+            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(true);
+        } else {
+            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(false);
+        }
 
         metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n");
         metadata.append("The labels are: \n").append(valueSet.toString());
