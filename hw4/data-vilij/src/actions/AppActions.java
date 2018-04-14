@@ -77,6 +77,8 @@ public final class AppActions implements ActionComponent {
                 ((AppUI) applicationTemplate.getUIComponent()).getNewButton().setDisable(true);
                 ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
                 ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
+                ((AppUI) applicationTemplate.getUIComponent()).setShowSubAlgorithms(false);
+                ((AppUI) applicationTemplate.getUIComponent()).setShowRun(false);
             }
         } catch (IOException e) {
             errorHandlingHelper();

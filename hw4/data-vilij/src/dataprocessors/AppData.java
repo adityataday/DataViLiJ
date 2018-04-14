@@ -101,6 +101,7 @@ public class AppData implements DataComponent {
         ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(2);
         ((AppUI) applicationTemplate.getUIComponent()).setMetaData(processor.metaData(dataFilePath));
         ((AppUI) (applicationTemplate.getUIComponent())).setShowSubAlgorithms(false);
+        ((AppUI) (applicationTemplate.getUIComponent())).setShowRun(false);
 
         StringBuilder displayText = new StringBuilder();
         String[] token = text.split("\\n");
