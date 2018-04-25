@@ -1,13 +1,13 @@
 package words;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WordCounter {
     private final List<CountedWord> words;
 
     WordCounter() {
-	words = new LinkedList<>();
+	words = new ArrayList<>();
     }
     
     private CountedWord findWord(Word w) {
