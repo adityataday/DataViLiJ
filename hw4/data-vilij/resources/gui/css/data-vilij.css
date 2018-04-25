@@ -1,0 +1,89 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Mar 4, 2018, 4:50:26 PM
+    Author     : Aditya Taday
+*/
+
+/* Styling the graph*/
+
+.chart-plot-background {
+    -fx-border-color: black; 
+    -fx-border-style: solid; 
+    -fx-border-width: 4px; 
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: transparent;
+    
+}
+
+.axis {
+    -fx-font-size: 1.4em;    
+    -fx-tick-label-fill: #914800;
+    -fx-tick-length: 20;
+    -fx-minor-tick-length: 10;
+}
+
+
+.axis-tick-mark {
+    -fx-stroke: #228B22;
+    -fx-stroke-width: 3; 
+}
+
+.axis-minor-tick-mark {
+    -fx-stroke: black; 
+}
+
+/*.chart-series-line { 
+    -fx-stroke-width: 0; 
+}*/
+
+.chart-line-symbol:hover{
+    -fx-cursor: hand;
+}
+
+.onHover{
+    -fx-background-color: ORANGE;
+}
+
+.tb-rectangle{
+    -fx-arc-width: 25;
+    -fx-arc-height: 25;
+    -fx-fill: WHITE;
+    -fx-stroke: LIGHTGRAY;
+}
+
+.tb-circle{
+    -fx-fill: WHITE;
+    -fx-stroke: LIGHTGRAY;
+}
+
+.tb-text{
+    -fx-font: 18px "Sans Serif"; 
+    -fx-fill: BLACK;
+}
+
+.md-text{
+    -fx-font: 15px "Sans Serif"; 
+    -fx-fill: BLACK;
+}
+
+.ab-text{
+    -fx-font: 20px "Sans Serif"; 
+    -fx-fill: BLACK;
+}
+
+.ab-button{
+    -fx-max-height: 200;
+    -fx-max-width: 100;
+}
+
+
