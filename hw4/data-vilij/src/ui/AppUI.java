@@ -13,15 +13,22 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -37,10 +44,15 @@ import vilij.templates.UITemplate;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Modality;
+import vilij.components.Dialog;
+import vilij.components.ErrorDialog;
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_FILENAME;
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
+import static vilij.settings.PropertyTypes.IS_WINDOW_RESIZABLE;
 
 /**
  * This is the application's user interface implementation.
@@ -64,6 +76,10 @@ public final class AppUI extends UITemplate {
     private Button clustering;
     private RadioButton radioButton;
     private Button configuration;
+    private int maxIterations;
+    private int updateInterval;
+    private boolean isContinous;
+    private int noOfClusters;
 
     SimpleStringProperty metaData;
 
@@ -75,6 +91,7 @@ public final class AppUI extends UITemplate {
     BooleanProperty bothAlgorithm;
     BooleanProperty showSubAlgorithms;
     BooleanProperty showRun;
+    BooleanProperty isClusteringAlgorithm;
 
     public void setShowRun(boolean property) {
         this.showRun.set(property);
@@ -130,6 +147,7 @@ public final class AppUI extends UITemplate {
         bothAlgorithm = new SimpleBooleanProperty(true);
         showSubAlgorithms = new SimpleBooleanProperty(true);
         showRun = new SimpleBooleanProperty(true);
+        isClusteringAlgorithm = new SimpleBooleanProperty();
     }
 
     @Override
@@ -231,7 +249,7 @@ public final class AppUI extends UITemplate {
         classification = new Button("Classification");
         clustering = new Button("Clustering");
 
-        //Styleing 
+        //Styling the alogrithm buttons
         algorithmBoxTitle.getStyleClass().add("ab-text");
         classification.getStyleClass().add("ab-button");
         clustering.getStyleClass().add("ab-button");
@@ -241,32 +259,12 @@ public final class AppUI extends UITemplate {
 
         //SubAlgorithmModule
         VBox subAlgorithmModule = new VBox();
-        ToggleGroup group = new ToggleGroup();
-        for (int i = 1; i <= 3; i++) {
-            HBox listOfAlgorithms = new HBox();
-            radioButton = new RadioButton("Algorithm " + i);
-            configuration = new Button();
-            String iconsPath = "/" + String.join(separator,
-                    manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
-                    manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
-            String configPath = String.join(separator,
-                    iconsPath, "config.png");
 
-            ImageView imageView = new ImageView(configPath);
-            imageView.setFitHeight(20);
-            imageView.setFitWidth(20);
-            configuration.setGraphic(imageView);
-            radioButton.setOnMouseClicked(e -> {
-                showRun.set(true);
-            });
-
-            radioButton.setToggleGroup(group);
-
-            listOfAlgorithms.getChildren().addAll(radioButton, configuration);
-            listOfAlgorithms.setSpacing(10);
-            subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
-            ;
-        }
+        isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
+            subAlgorithmModule.getChildren().clear();
+            showRun.set(false);
+            subAlgorithmModuleProcessing(subAlgorithmModule, oldValue);
+        });
 
         subAlgorithmModule.setSpacing(20);
 
@@ -411,13 +409,25 @@ public final class AppUI extends UITemplate {
 
     private void setClassificationActions() {
         classification.setOnMouseClicked(e -> {
+            clustering.getStyleClass().removeAll("algo-selected");
+            classification.getStyleClass().add("algo-selected");
             showSubAlgorithms.set(true);
+            if (!isClusteringAlgorithm.get()) {
+                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
+            }
+
         });
     }
 
     private void setClusteringActions() {
         clustering.setOnMouseClicked(e -> {
+            clustering.getStyleClass().add("algo-selected");
+            classification.getStyleClass().removeAll("algo-selected");
             showSubAlgorithms.set(true);
+            if (isClusteringAlgorithm.get()) {
+                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
+            }
+
         });
     }
 
@@ -558,6 +568,163 @@ public final class AppUI extends UITemplate {
         buttonBody.setOnMouseClicked(event -> {
             toggleSwitchIsOn.set(!toggleSwitchIsOn.get());
         });
+    }
+
+    /**
+     * This is the method where the sub algorithm properties are set depending
+     * if its a clustering or classification.
+     *
+     * @param subAlgorithmModule
+     * @param value - This is a boolean that defines what type of algorithm was
+     * selected.
+     */
+    private void subAlgorithmModuleProcessing(VBox subAlgorithmModule, Boolean value) {
+        PropertyManager manager = applicationTemplate.manager;
+
+        ToggleGroup group = new ToggleGroup();
+
+        for (int i = 1; i <= 3; i++) {
+            HBox listOfAlgorithms = new HBox();
+            radioButton = new RadioButton("Algorithm " + i);
+            configuration = new Button();
+            String iconsPath = "/" + String.join(separator,
+                    manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
+                    manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
+            String configPath = String.join(separator,
+                    iconsPath, "config.png");
+
+            ImageView imageView = new ImageView(configPath);
+            imageView.setFitHeight(20);
+            imageView.setFitWidth(20);
+            configuration.setGraphic(imageView);
+
+            radioButton.setOnMouseClicked(e -> {
+                showRun.set(true);
+            });
+
+            configuration.setOnMouseClicked(e -> {
+                
+                if(isClusteringAlgorithm.get()){
+                    maxIterations = 0;
+                }
+
+                Stage secondryStage = new Stage();
+                secondryStage.setTitle("Configuration");
+                GridPane gridPane = new GridPane();
+
+                gridPane.setAlignment(Pos.CENTER);
+                gridPane.setPadding(new Insets(40, 40, 40, 40));
+                gridPane.setHgap(10);
+                gridPane.setVgap(10);
+
+                ColumnConstraints columnOneConstraints = new ColumnConstraints(100, 100, Double.MAX_VALUE);
+                columnOneConstraints.setHalignment(HPos.RIGHT);
+                ColumnConstraints columnTwoConstrains = new ColumnConstraints(200, 200, Double.MAX_VALUE);
+                columnTwoConstrains.setHgrow(Priority.ALWAYS);
+
+                gridPane.getColumnConstraints().addAll(columnOneConstraints, columnTwoConstrains);
+
+                // Add Header
+                Label header = new Label("Algorithm Run Configuration");
+                header.setFont(Font.font("San serif", FontWeight.BOLD, 20));
+                gridPane.add(header, 0, 0, 2, 1);
+                GridPane.setHalignment(header, HPos.CENTER);
+                GridPane.setMargin(header, new Insets(20, 0, 20, 0));
+
+                // Add Name Label
+                Label maxIterationLabel = new Label("Max Iterations : ");
+                gridPane.add(maxIterationLabel, 0, 1);
+
+                // Add MaxIteration Label
+                TextField maxIterationtext = new TextField();
+                maxIterationtext.setPrefHeight(20);
+                if (maxIterations != 0) {
+                    maxIterationtext.setText(String.valueOf(maxIterations));
+                }
+                gridPane.add(maxIterationtext, 1, 1);
+
+                // Add Update Interval Label
+                Label updateIntervalLabel = new Label("Update Interval : ");
+                gridPane.add(updateIntervalLabel, 0, 2);
+
+                // Add Update Interval Field
+                TextField updateIntervalText = new TextField();
+                updateIntervalText.setPrefHeight(20);
+                if (updateInterval != 0) {
+                    updateIntervalText.setText(String.valueOf(updateInterval));
+                }
+                gridPane.add(updateIntervalText, 1, 2);
+
+                Label noOfClustersLabel = new Label("No of Clusters : ");
+
+                // Add Update Interval Field
+                TextField noOfClustersText = new TextField();
+                noOfClustersText.setPrefHeight(20);
+                if (noOfClusters != 0) {
+                    noOfClustersText.setText(String.valueOf(noOfClusters));
+                }
+
+                gridPane.add(noOfClustersLabel, 0, 3);
+                gridPane.add(noOfClustersText, 1, 3);
+
+                noOfClustersLabel.setVisible(value);
+                noOfClustersText.setVisible(value);
+
+                Label runPlay = new Label("Continous Run?");
+                gridPane.add(runPlay, 0, 4);
+
+                // Is continous checkbox
+                CheckBox checkBox = new CheckBox();
+                checkBox.setPrefHeight(20);
+                checkBox.setSelected(isContinous);
+                gridPane.add(checkBox, 1, 4);
+
+                // Add Submit Button
+                Button submit = new Button("Submit");
+                submit.setPrefHeight(40);
+                submit.setPrefWidth(100);
+                gridPane.add(submit, 0, 5, 2, 1);
+                GridPane.setHalignment(submit, HPos.CENTER);
+                GridPane.setMargin(submit, new Insets(20, 0, 20, 0));
+
+                //submit button set on action
+                submit.setOnMouseClicked(event -> {
+                    try {
+                        maxIterations = Integer.parseInt(maxIterationtext.getText());
+                        updateInterval = Integer.parseInt(updateIntervalText.getText());
+                        if (value) {
+                            noOfClusters = Integer.parseInt(noOfClustersText.getText());
+                        }
+                        isContinous = checkBox.isSelected();
+
+                        secondryStage.close();
+                    } catch (NumberFormatException ex) {
+                        ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+                        //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
+                        String errTitle = "";
+                        String errMsg = "";
+                        String errInput = "";
+                        dialog.show(errTitle, errMsg + errInput);
+                    }
+
+                });
+
+                //Scene and stage addition
+                Scene secondryScene = new Scene(gridPane, 400, 300);
+                secondryStage.setScene(secondryScene);
+                secondryStage.initOwner(primaryStage);
+                secondryStage.initModality(Modality.WINDOW_MODAL);
+                secondryStage.setResizable(applicationTemplate.manager.getPropertyValueAsBoolean(IS_WINDOW_RESIZABLE.name()));
+                secondryStage.show();
+            });
+
+            radioButton.setToggleGroup(group);
+
+            listOfAlgorithms.getChildren().addAll(radioButton, configuration);
+            listOfAlgorithms.setSpacing(10);
+            subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
+        }
+
     }
 
 }

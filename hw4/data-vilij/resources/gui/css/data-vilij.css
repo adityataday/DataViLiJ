@@ -86,4 +86,8 @@ and open the template in the editor.
     -fx-max-width: 100;
 }
 
+.algo-selected{
+    -fx-background-color: #A7E2FB;
+}
+
 
