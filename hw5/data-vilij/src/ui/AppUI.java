@@ -1,9 +1,12 @@
 package ui;
 
 import actions.AppActions;
+import classification.RandomClassifier;
+import data.DataSet;
 import dataprocessors.AppData;
 import javafx.scene.shape.Rectangle;
 import static java.io.File.separator;
+import java.util.List;
 import javafx.util.Duration;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
@@ -263,7 +266,7 @@ public final class AppUI extends UITemplate {
         isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
             subAlgorithmModule.getChildren().clear();
             showRun.set(false);
-            subAlgorithmModuleProcessing(subAlgorithmModule, oldValue);
+            subAlgorithmModuleProcessing(subAlgorithmModule, newValue);
         });
 
         subAlgorithmModule.setSpacing(20);
@@ -403,8 +406,45 @@ public final class AppUI extends UITemplate {
         setTextAreaActions();
         setClassificationActions();
         setClusteringActions();
+        setRunActions();
         //setDisplayButtonActions();
         //setCheckBoxAction();
+    }
+
+    private void setRunActions() {
+        run.setOnMouseClicked(e -> {
+            if (maxIterations != 0 || updateInterval != 0) {
+                if (!isClusteringAlgorithm.get()) {
+                    ((AppData) applicationTemplate.getDataComponent()).displayData();
+                    DataSet dataset = DataSet.fromTSDProcessor(((AppData) applicationTemplate.getDataComponent()).getProcessor());
+                    RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
+                    new Thread(classifier).start();
+
+                    Runnable task = () -> {
+                        try {
+                            while (!Thread.interrupted()) {
+                                List<Integer> algorithmOutput = classifier.getQueue().take();
+                                // Do Something
+//                                System.out.println("OUT" + " " + classifier.getQueue().size());
+//                                Thread.sleep(3000);
+                                
+                            }
+                        } catch (InterruptedException ex) {
+
+                        }
+                    };
+                    new Thread(task).start();
+
+                } else {
+
+                }
+            }
+
+        });
+    }
+    
+    private void clusteringAlgorithmOutput(List<Integer> algorithmOutput){
+       
     }
 
     private void setClassificationActions() {
@@ -412,7 +452,10 @@ public final class AppUI extends UITemplate {
             clustering.getStyleClass().removeAll("algo-selected");
             classification.getStyleClass().add("algo-selected");
             showSubAlgorithms.set(true);
-            if (!isClusteringAlgorithm.get()) {
+            if (isClusteringAlgorithm.get()) {
+                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
+            } else {
+                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
                 isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
             }
 
@@ -424,7 +467,7 @@ public final class AppUI extends UITemplate {
             clustering.getStyleClass().add("algo-selected");
             classification.getStyleClass().removeAll("algo-selected");
             showSubAlgorithms.set(true);
-            if (isClusteringAlgorithm.get()) {
+            if (!isClusteringAlgorithm.get()) {
                 isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
             }
 
@@ -603,10 +646,6 @@ public final class AppUI extends UITemplate {
             });
 
             configuration.setOnMouseClicked(e -> {
-                
-                if(isClusteringAlgorithm.get()){
-                    maxIterations = 0;
-                }
 
                 Stage secondryStage = new Stage();
                 secondryStage.setTitle("Configuration");

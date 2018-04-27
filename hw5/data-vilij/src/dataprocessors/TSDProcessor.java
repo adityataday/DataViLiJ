@@ -46,11 +46,27 @@ public final class TSDProcessor {
     private static final String CORRECT_DATA_FORMAT = "Correct Input must be [@Instance \\t label \\t data]";
 
     private Map<String, String> dataLabels;
+
+    public Map<String, String> getDataLabels() {
+        return dataLabels;
+    }
+
+    public void setDataLabels(Map<String, String> dataLabels) {
+        this.dataLabels = dataLabels;
+    }
+
+    public Map<String, Point2D> getDataPoints() {
+        return dataPoints;
+    }
+
+    public void setDataPoints(Map<String, Point2D> dataPoints) {
+        this.dataPoints = dataPoints;
+    }
     private Map<String, Point2D> dataPoints;
     private ApplicationTemplate applicationTemplate;
 
     public TSDProcessor(ApplicationTemplate applicationTemplate) {
-        dataLabels = new LinkedHashMap<>();
+        dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
         this.applicationTemplate = applicationTemplate;
     }
@@ -133,18 +149,18 @@ public final class TSDProcessor {
 
     }
 
-    private void displayFilter() {
-        ArrayList<String> keys = new ArrayList<>(dataLabels.keySet());
-
-        for (int i = 0; i < keys.size(); i++) {
-            if (i >= 10) {
-                dataLabels.remove(keys.get(i));
-            }
-        }
-
-        errorHandlingHelper(keys.size());
-
-    }
+//    private void displayFilter() {
+//        ArrayList<String> keys = new ArrayList<>(dataLabels.keySet());
+//
+//        for (int i = 0; i < keys.size(); i++) {
+//            if (i >= 10) {
+//                dataLabels.remove(keys.get(i));
+//            }
+//        }
+//
+//        errorHandlingHelper(keys.size());
+//
+//    }
 
     private void errorHandlingHelper(int size) {
         ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);

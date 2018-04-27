@@ -1,6 +1,7 @@
 package algorithms;
 
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * An abstract class for classification algorithms. The output
@@ -20,6 +21,8 @@ public abstract class Classifier implements Algorithm {
      * See 3.4.4 of the SRS.
      */
     protected List<Integer> output;
+    
+    protected LinkedBlockingQueue<List<Integer>> queue = new LinkedBlockingQueue();
 
     public List<Integer> getOutput() { return output; }
 

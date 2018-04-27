@@ -6,8 +6,12 @@ import data.DataSet;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Ritwik Banerjee
@@ -25,6 +29,10 @@ public class RandomClassifier extends Classifier {
 
     // currently, this value does not change after instantiation
     private final AtomicBoolean tocontinue;
+    
+    public LinkedBlockingQueue<List<Integer>> getQueue(){
+        return queue;
+    }
 
     @Override
     public int getMaxIterations() {
@@ -64,14 +72,32 @@ public class RandomClassifier extends Classifier {
             // everything below is just for internal viewing of how the output is changing
             // in the final project, such changes will be dynamically visible in the UI
             if (i % updateInterval == 0) {
-                System.out.printf("Iteration number %d: ", i); //
+
+                queue.add(output);
+
+                //For the purpose of internal viewing
+                /* System.out.printf("Iteration number %d: ", i); //
                 flush();
+                 */
             }
             if (i > maxIterations * .6 && RAND.nextDouble() < 0.05) {
+
+                queue.add(output);
+
+                //For the purpose of internal viewing
+                /*
                 System.out.printf("Iteration number %d: ", i);
                 flush();
+                 */
                 break;
             }
+//            try {
+//                System.out.println("IN" + " " + queue.size());
+//                Thread.sleep(1000);
+//                
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         }
     }
 

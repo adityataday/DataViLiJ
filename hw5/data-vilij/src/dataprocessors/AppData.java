@@ -26,6 +26,14 @@ public class AppData implements DataComponent {
 
     private TSDProcessor processor;
 
+    public TSDProcessor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(TSDProcessor processor) {
+        this.processor = processor;
+    }
+
     private ApplicationTemplate applicationTemplate;
 
     public AppData(ApplicationTemplate applicationTemplate) {

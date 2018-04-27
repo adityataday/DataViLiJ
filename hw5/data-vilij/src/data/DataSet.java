@@ -1,5 +1,6 @@
 package data;
 
+import dataprocessors.TSDProcessor;
 import javafx.geometry.Point2D;
 
 import java.io.IOException;
@@ -33,8 +34,9 @@ public class DataSet {
     }
 
     private static String nameFormatCheck(String name) throws InvalidDataNameException {
-        if (!name.startsWith("@"))
+        if (!name.startsWith("@")) {
             throw new InvalidDataNameException(name);
+        }
         return name;
     }
 
@@ -43,22 +45,40 @@ public class DataSet {
         return new Point2D(Double.parseDouble(coordinateStrings[0]), Double.parseDouble(coordinateStrings[1]));
     }
 
-    private Map<String, String>  labels;
+    private Map<String, String> labels;
     private Map<String, Point2D> locations;
 
-    /** Creates an empty dataset. */
+    /**
+     * Creates an empty dataset.
+     */
     public DataSet() {
         labels = new HashMap<>();
         locations = new HashMap<>();
     }
+    
+    
+    /**
+     * Constructor for TSDProcessor = Dataset. 
+     * @param labels
+     * @param locations 
+     */
+    public DataSet(Map<String, String> labels, Map<String, Point2D> locations) {
+        this.labels = labels;
+        this.locations = locations;
+    }
 
-    public Map<String, String> getLabels()     { return labels; }
+    public Map<String, String> getLabels() {
+        return labels;
+    }
 
-    public Map<String, Point2D> getLocations() { return locations; }
+    public Map<String, Point2D> getLocations() {
+        return locations;
+    }
 
     public void updateLabel(String instanceName, String newlabel) {
-        if (labels.get(instanceName) == null)
+        if (labels.get(instanceName) == null) {
             throw new NoSuchElementException();
+        }
         labels.put(instanceName, newlabel);
     }
 
@@ -77,6 +97,11 @@ public class DataSet {
                 e.printStackTrace();
             }
         });
+        return dataset;
+    }
+
+    public static DataSet fromTSDProcessor(TSDProcessor processor) {
+        DataSet dataset = new DataSet(processor.getDataLabels(), processor.getDataPoints());
         return dataset;
     }
 }
