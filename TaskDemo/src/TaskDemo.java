@@ -121,9 +121,9 @@ public class TaskDemo extends Application {
             // EMPTY EXCEPTION HANDLERS ARE OFTEN A BAD IDEA!
         }
 
-        Platform.runLater(() -> {
+//       Platform.runLater(() -> {
             taskView.getItems().remove(myPane);
-        });
+//        });
 
     }
 
