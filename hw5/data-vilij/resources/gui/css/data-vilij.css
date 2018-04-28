@@ -22,7 +22,7 @@ and open the template in the editor.
 
 .chart-horizontal-grid-lines {
     -fx-stroke: transparent;
-    
+
 }
 
 .axis {
@@ -42,9 +42,9 @@ and open the template in the editor.
     -fx-stroke: black; 
 }
 
-/*.chart-series-line { 
+.chart-series-line { 
     -fx-stroke-width: 0; 
-}*/
+}
 
 .chart-line-symbol:hover{
     -fx-cursor: hand;

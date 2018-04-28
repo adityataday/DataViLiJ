@@ -386,22 +386,18 @@ public final class AppUI extends UITemplate {
 
         StackPane rightPanel = new StackPane(chart);
 
-        rightPanel.setMaxSize(windowWidth
-                * 0.69, windowHeight * 0.69);
-        rightPanel.setMinSize(windowWidth
-                * 0.69, windowHeight * 0.69);
+        rightPanel.setMaxSize(windowWidth * 0.69, windowHeight * 0.69);
+        rightPanel.setMinSize(windowWidth * 0.69, windowHeight * 0.69);
         StackPane.setAlignment(rightPanel, Pos.CENTER);
 
         workspace = new HBox(leftPanel, rightPanel);
 
         HBox.setHgrow(workspace, Priority.ALWAYS);
 
-        appPane.getChildren()
-                .add(workspace);
+        appPane.getChildren().add(workspace);
         VBox.setVgrow(appPane, Priority.ALWAYS);
 
-        applicationTemplate.getUIComponent()
-                .getPrimaryScene().getStylesheets().add(cssPath);
+        applicationTemplate.getUIComponent().getPrimaryScene().getStylesheets().add(cssPath);
     }
 
     private void setWorkspaceActions() {
@@ -417,54 +413,73 @@ public final class AppUI extends UITemplate {
         run.setOnMouseClicked(e -> {
             if (maxIterations != 0 || updateInterval != 0) {
                 if (!isClusteringAlgorithm.get()) {
-                    AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
-                    dataComponent.displayData();
-                    DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
-                    RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
-                    new Thread(classifier).start();
-
-                    Runnable task = () -> {
-                        try {
-                            while (!Thread.interrupted()) {
-                                List<Integer> algorithmOutput = classifier.getQueue().take();
-
-                                clusteringAlgorithmOutput(algorithmOutput, dataComponent);
-
-                                // Do Something
-//                                System.out.println("OUT" + " " + classifier.getQueue().size());
-                                Thread.sleep(1000);
-
-                            }
-                        } catch (InterruptedException ex) {
-
-                        }
-                    };
-                    new Thread(task).start();
+                    classificationAlgorithmProcessing();
 
                 } else {
-
+                    //Clustering Algorithms
                 }
+            } else {
+                ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+                //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
+                String errTitle = "Cannot Run";
+                String errMsg = "No run configuration found.";
+                String errInput = " Please input valid run configurations";
+                dialog.show(errTitle, errMsg + errInput);
             }
 
         });
     }
 
-    private void clusteringAlgorithmOutput(List<Integer> algorithmOutput, AppData dataComponent) {
+    private void classificationAlgorithmProcessing() {
+        showRun.set(false);
+        AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
+        dataComponent.displayData();
+        DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
+        RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
+        new Thread(classifier).start();
+
+        Runnable task = () -> {
+            try {
+                while (!Thread.interrupted()) {
+                    List<Integer> algorithmOutput = classifier.getQueue().take();
+
+                    classificationAlgorithmOutput(algorithmOutput, dataComponent);
+
+                    // Do Something
+//                                System.out.println("OUT" + " " + classifier.getQueue().size());
+                    Thread.sleep(1000);
+
+                }
+
+            } catch (InterruptedException ex) {
+
+            }
+
+        };
+        new Thread(task).start();
+
+    }
+
+    private void classificationAlgorithmOutput(List<Integer> algorithmOutput, AppData dataComponent) {
         double y1 = ((dataComponent.getProcessor().getMin() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
         double y2 = ((dataComponent.getProcessor().getMax() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
 
         XYChart.Series<Number, Number> regression = new XYChart.Series<>();
         regression.getData().add(0, new XYChart.Data<>(dataComponent.getProcessor().getMin(), y1));
         regression.getData().add(1, new XYChart.Data<>(dataComponent.getProcessor().getMax(), y2));
+        regression.setName("Regression");
 
         Platform.runLater(() -> {
-            if (chart.getData().size() > 1) {
+            if (chart.getData().get(chart.getData().size() - 1).getName().equals("Regression")) {
                 chart.getData().remove(chart.getData().size() - 1);
             }
+
             chart.getData().add(regression);
 
-        });
+            regression.nodeProperty().get().setStyle(" -fx-stroke-width: 4;"
+                    + "-fx-stroke: red;");
 
+        });
     }
 
     private void setClassificationActions() {
@@ -648,7 +663,7 @@ public final class AppUI extends UITemplate {
 
         for (int i = 1; i <= 3; i++) {
             HBox listOfAlgorithms = new HBox();
-            radioButton = new RadioButton("Algorithm " + i);
+            radioButton = new RadioButton("RandomClassifier");
             configuration = new Button();
             String iconsPath = "/" + String.join(separator,
                     manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
@@ -760,9 +775,9 @@ public final class AppUI extends UITemplate {
                     } catch (NumberFormatException ex) {
                         ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
                         //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
-                        String errTitle = "";
-                        String errMsg = "";
-                        String errInput = "";
+                        String errTitle = "Invalid Input";
+                        String errMsg = "Invalid input type.";
+                        String errInput = " Please input integer values only.";
                         dialog.show(errTitle, errMsg + errInput);
                     }
 
