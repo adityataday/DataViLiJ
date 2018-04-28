@@ -65,10 +65,24 @@ public final class TSDProcessor {
     private Map<String, Point2D> dataPoints;
     private ApplicationTemplate applicationTemplate;
 
+    private AtomicInteger min;
+
+    public int getMin() {
+        return min.get();
+    }
+
+    public int getMax() {
+        return max.get();
+    }
+
+    private AtomicInteger max;
+
     public TSDProcessor(ApplicationTemplate applicationTemplate) {
         dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
         this.applicationTemplate = applicationTemplate;
+        min = new AtomicInteger(Integer.MAX_VALUE);
+        max = new AtomicInteger(Integer.MIN_VALUE);
     }
 
     /**
@@ -91,6 +105,12 @@ public final class TSDProcessor {
                         String label = list.get(1);
                         String[] pair = list.get(2).split(",");
                         Point2D point = new Point2D(Double.parseDouble(pair[0]), Double.parseDouble(pair[1]));
+                        if ((int) Double.parseDouble(pair[0]) < min.get()) {
+                            min.set((int) Double.parseDouble(pair[0]));
+                        }
+                        if ((int) Double.parseDouble(pair[0]) > max.get()) {
+                            max.set((int) Double.parseDouble(pair[0]));
+                        }
                         checkInstanceDuplicates(name);
                         dataLabels.put(name, label);
                         dataPoints.put(name, point);
@@ -161,7 +181,6 @@ public final class TSDProcessor {
 //        errorHandlingHelper(keys.size());
 //
 //    }
-
     private void errorHandlingHelper(int size) {
         ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
         PropertyManager manager = applicationTemplate.manager;

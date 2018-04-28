@@ -11,6 +11,7 @@ import javafx.util.Duration;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -22,6 +23,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -415,8 +417,9 @@ public final class AppUI extends UITemplate {
         run.setOnMouseClicked(e -> {
             if (maxIterations != 0 || updateInterval != 0) {
                 if (!isClusteringAlgorithm.get()) {
-                    ((AppData) applicationTemplate.getDataComponent()).displayData();
-                    DataSet dataset = DataSet.fromTSDProcessor(((AppData) applicationTemplate.getDataComponent()).getProcessor());
+                    AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
+                    dataComponent.displayData();
+                    DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
                     RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
                     new Thread(classifier).start();
 
@@ -424,10 +427,13 @@ public final class AppUI extends UITemplate {
                         try {
                             while (!Thread.interrupted()) {
                                 List<Integer> algorithmOutput = classifier.getQueue().take();
+
+                                clusteringAlgorithmOutput(algorithmOutput, dataComponent);
+
                                 // Do Something
 //                                System.out.println("OUT" + " " + classifier.getQueue().size());
-//                                Thread.sleep(3000);
-                                
+                                Thread.sleep(1000);
+
                             }
                         } catch (InterruptedException ex) {
 
@@ -442,9 +448,23 @@ public final class AppUI extends UITemplate {
 
         });
     }
-    
-    private void clusteringAlgorithmOutput(List<Integer> algorithmOutput){
-       
+
+    private void clusteringAlgorithmOutput(List<Integer> algorithmOutput, AppData dataComponent) {
+        double y1 = ((dataComponent.getProcessor().getMin() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
+        double y2 = ((dataComponent.getProcessor().getMax() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
+
+        XYChart.Series<Number, Number> regression = new XYChart.Series<>();
+        regression.getData().add(0, new XYChart.Data<>(dataComponent.getProcessor().getMin(), y1));
+        regression.getData().add(1, new XYChart.Data<>(dataComponent.getProcessor().getMax(), y2));
+
+        Platform.runLater(() -> {
+            if (chart.getData().size() > 1) {
+                chart.getData().remove(chart.getData().size() - 1);
+            }
+            chart.getData().add(regression);
+
+        });
+
     }
 
     private void setClassificationActions() {
