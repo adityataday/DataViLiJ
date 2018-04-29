@@ -414,7 +414,6 @@ public final class AppUI extends UITemplate {
             if (maxIterations != 0 || updateInterval != 0) {
                 if (!isClusteringAlgorithm.get()) {
                     classificationAlgorithmProcessing();
-
                 } else {
                     //Clustering Algorithms
                 }
@@ -431,32 +430,62 @@ public final class AppUI extends UITemplate {
     }
 
     private void classificationAlgorithmProcessing() {
-        showRun.set(false);
+        //showRun.set(false);
+
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
         dataComponent.displayData();
         DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
         RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
         new Thread(classifier).start();
 
-        Runnable task = () -> {
-            try {
-                while (!Thread.interrupted()) {
-                    List<Integer> algorithmOutput = classifier.getQueue().take();
+        if (isContinous) {
 
-                    classificationAlgorithmOutput(algorithmOutput, dataComponent);
+            Runnable task = () -> {
+                try {
+                    while (!Thread.interrupted()) {
+                        List<Integer> algorithmOutput = classifier.getQueue().take();
 
-                    // Do Something
+                        classificationAlgorithmOutput(algorithmOutput, dataComponent);
+
+                        // Do Something
 //                                System.out.println("OUT" + " " + classifier.getQueue().size());
-                    Thread.sleep(1000);
+                        Thread.sleep(1000);
+
+                    }
+
+                } catch (InterruptedException ex) {
 
                 }
 
-            } catch (InterruptedException ex) {
+            };
+            new Thread(task).start();
 
-            }
+        } else {
 
-        };
-        new Thread(task).start();
+            Runnable task = () -> {
+
+                try {
+                    while (!Thread.interrupted()) {
+                        System.out.println("I want to go here");
+                        List<Integer> algorithmOutput = classifier.getQueue().take();
+
+                        classificationAlgorithmOutput(algorithmOutput, dataComponent);
+
+                        //Do Something
+//                        System.out.println("OUT" + " " + classifier.getQueue().size());
+//                        Thread.sleep(3000);
+                        wait();
+
+                    }
+
+                } catch (InterruptedException ex) {
+
+                }
+
+            };
+            new Thread(task).start();
+
+        }
 
     }
 
@@ -480,6 +509,7 @@ public final class AppUI extends UITemplate {
                     + "-fx-stroke: red;");
 
         });
+
     }
 
     private void setClassificationActions() {

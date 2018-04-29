@@ -61,7 +61,7 @@ public class RandomClassifier extends Classifier {
 
     @Override
     public void run() {
-        for (int i = 1; i <= maxIterations && tocontinue(); i++) {
+        for (int i = 1; i <= maxIterations; i++) {
             int xCoefficient = new Long(-1 * Math.round((2 * RAND.nextDouble() - 1) * 10)).intValue();
             int yCoefficient = 10;
             int constant = RAND.nextInt(11);
@@ -91,13 +91,13 @@ public class RandomClassifier extends Classifier {
                  */
                 break;
             }
-//            try {
-//                System.out.println("IN" + " " + queue.size());
-//                Thread.sleep(1000);
-//                
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
-//            }
+            try {
+                System.out.println("IN" + " " + queue.size());
+                Thread.sleep(1000);
+                
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
