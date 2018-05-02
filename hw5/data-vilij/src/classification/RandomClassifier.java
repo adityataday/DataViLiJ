@@ -29,8 +29,8 @@ public class RandomClassifier extends Classifier {
 
     // currently, this value does not change after instantiation
     private final AtomicBoolean tocontinue;
-    
-    public LinkedBlockingQueue<List<Integer>> getQueue(){
+
+    public LinkedBlockingQueue<List<Integer>> getQueue() {
         return queue;
     }
 
@@ -50,9 +50,9 @@ public class RandomClassifier extends Classifier {
     }
 
     public RandomClassifier(DataSet dataset,
-            int maxIterations,
-            int updateInterval,
-            boolean tocontinue) {
+                            int maxIterations,
+                            int updateInterval,
+                            boolean tocontinue) {
         this.dataset = dataset;
         this.maxIterations = maxIterations;
         this.updateInterval = updateInterval;

@@ -1,6 +1,7 @@
 package dataprocessors;
 
 import actions.AppActions;
+import javafx.scene.text.Text;
 import settings.AppPropertyTypes;
 import ui.AppUI;
 import vilij.components.DataComponent;
@@ -68,7 +69,8 @@ public class AppData implements DataComponent {
         try {
             processor.processString(dataString);
             ((AppUI) applicationTemplate.getUIComponent()).setHasNewText(true);
-            ((AppUI) applicationTemplate.getUIComponent()).setMetaData(processor.metaData());
+            ((AppUI) applicationTemplate.getUIComponent()).setMetaDataInfo(processor.metaData());
+            ((AppUI) applicationTemplate.getUIComponent()).setShowMetaData(true);
 
         } catch (Exception e) {
             exceptionHelper(e);
@@ -105,11 +107,14 @@ public class AppData implements DataComponent {
      * @param text
      */
     private void updateGUI(String text, Path dataFilePath) {
+        if (!((AppUI) applicationTemplate.getUIComponent()).isToggleSwitchIsOn()) {
+            ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
+        }
 
-        ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(2);
-        ((AppUI) applicationTemplate.getUIComponent()).setMetaData(processor.metaData(dataFilePath));
-        ((AppUI) (applicationTemplate.getUIComponent())).setShowSubAlgorithms(false);
-        ((AppUI) (applicationTemplate.getUIComponent())).setShowRun(false);
+        ((AppUI) applicationTemplate.getUIComponent()).setMetaDataInfo(processor.metaData(dataFilePath));
+        ((AppUI) applicationTemplate.getUIComponent()).setShowMetaData(true);
+        ((AppUI) applicationTemplate.getUIComponent()).setShowTextArea(true);
+
 
         StringBuilder displayText = new StringBuilder();
         String[] token = text.split("\\n");
@@ -122,6 +127,9 @@ public class AppData implements DataComponent {
 
         ((AppUI) applicationTemplate.getUIComponent()).getTextArea().setText(displayText.toString());
         ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+        ((AppUI) applicationTemplate.getUIComponent()).setShowToggleSwitchBox(false);
+        ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(false);
+
 
     }
 
@@ -135,11 +143,11 @@ public class AppData implements DataComponent {
         ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
         ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
         processor.clear();
-        ((AppUI) applicationTemplate.getUIComponent()).setMetaData("");
-        ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
+        if (!((AppUI) applicationTemplate.getUIComponent()).isShowToggleSwitchBox() || ((AppUI) applicationTemplate.getUIComponent()).isToggleSwitchIsOn())
+            ((AppUI) applicationTemplate.getUIComponent()).resetUI();
+        else
+            ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
 
-        if (((AppUI) applicationTemplate.getUIComponent()).getLeftSide().getValue() == 2) {
-            ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(4);
-        }
+
     }
 }

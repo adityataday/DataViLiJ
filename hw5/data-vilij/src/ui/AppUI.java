@@ -18,8 +18,6 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -89,53 +87,44 @@ public final class AppUI extends UITemplate {
     private int updateInterval;
     private boolean isContinous;
     private int noOfClusters;
+    private Text metaDataInfo;
 
-    SimpleStringProperty metaData;
 
-    //The boolean property marking whether or not the leftSide of my layout should be visible.
-    SimpleIntegerProperty leftSide;
+    private BooleanProperty showToggleSwitchBox;
+    private BooleanProperty showTextArea;
+    private BooleanProperty toggleSwitchIsOn;
+    private BooleanProperty showMetaData;
+    private BooleanProperty showClassificationAlgorithm;
+    private BooleanProperty isClusteringAlgorithm;
+    private BooleanProperty showSubAlgorithms;
+    private BooleanProperty showRunButton;
 
-    BooleanProperty toggleSwitchIsOn;
-    BooleanProperty showAlgorithmType;
-    BooleanProperty bothAlgorithm;
-    BooleanProperty showSubAlgorithms;
-    BooleanProperty showRun;
-    BooleanProperty isClusteringAlgorithm;
 
-    public void setShowRun(boolean property) {
-        this.showRun.set(property);
+    public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
+        super(primaryStage, applicationTemplate);
+        this.applicationTemplate = applicationTemplate;
+        toggleSwitchIsOn = new SimpleBooleanProperty();
+        showTextArea = new SimpleBooleanProperty();
+        showToggleSwitchBox = new SimpleBooleanProperty();
+        showMetaData = new SimpleBooleanProperty();
+        showClassificationAlgorithm = new SimpleBooleanProperty();
+        isClusteringAlgorithm = new SimpleBooleanProperty();
+        showSubAlgorithms = new SimpleBooleanProperty();
+        showRunButton = new SimpleBooleanProperty();
+
     }
 
-    public void setShowSubAlgorithms(boolean showSubAlgorithms) {
-        this.showSubAlgorithms.set(showSubAlgorithms);
+    public boolean isShowToggleSwitchBox() {
+        return showToggleSwitchBox.get();
     }
 
-    public void setBothAlgorithm(boolean property) {
-        this.bothAlgorithm.set(property);
+
+    public void setMetaDataInfo(String metaDataInfo) {
+        this.metaDataInfo.setText(metaDataInfo);
     }
 
-    public void setShowAlgorithmType(boolean property) {
-        this.showAlgorithmType.set(property);
-    }
-
-    public SimpleIntegerProperty getLeftSide() {
-        return leftSide;
-    }
-
-    public void setToggleSwitchIsOn(boolean property) {
-        this.toggleSwitchIsOn.set(property);
-    }
-
-    public BooleanProperty switchedOnProperty() {
-        return toggleSwitchIsOn;
-    }
-
-    public void setMetaData(String property) {
-        this.metaData.set(property);
-    }
-
-    public void setLeftSideProperty(int value) {
-        this.leftSide.setValue(value);
+    public TextArea getTextArea() {
+        return textArea;
     }
 
     public void setHasNewText(boolean hasNewText) {
@@ -146,18 +135,38 @@ public final class AppUI extends UITemplate {
         return chart;
     }
 
-    public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
-        super(primaryStage, applicationTemplate);
-        this.applicationTemplate = applicationTemplate;
-        leftSide = new SimpleIntegerProperty();
-        toggleSwitchIsOn = new SimpleBooleanProperty(false);
-        metaData = new SimpleStringProperty();
-        showAlgorithmType = new SimpleBooleanProperty();
-        bothAlgorithm = new SimpleBooleanProperty(true);
-        showSubAlgorithms = new SimpleBooleanProperty(true);
-        showRun = new SimpleBooleanProperty(true);
-        isClusteringAlgorithm = new SimpleBooleanProperty();
+    public void setShowToggleSwitchBox(boolean showToggleSwitchBox) {
+        this.showToggleSwitchBox.set(showToggleSwitchBox);
     }
+
+    public void setShowTextArea(boolean showTextArea) {
+        this.showTextArea.set(showTextArea);
+    }
+
+    public void setShowMetaData(boolean showMetaData) {
+        this.showMetaData.set(showMetaData);
+    }
+
+    public void setShowClassificationAlgorithm(boolean showClassificationAlgorithm) {
+        this.showClassificationAlgorithm.set(showClassificationAlgorithm);
+    }
+
+    public void setShowSubAlgorithms(boolean showSubAlgorithms) {
+        this.showSubAlgorithms.set(showSubAlgorithms);
+    }
+
+    public void setShowRunButton(boolean showRunButton) {
+        this.showRunButton.set(showRunButton);
+    }
+
+    public void setToggleSwitchIsOn(boolean toggleSwitchIsOn) {
+        this.toggleSwitchIsOn.set(toggleSwitchIsOn);
+    }
+
+    public boolean isToggleSwitchIsOn() {
+        return toggleSwitchIsOn.get();
+    }
+
 
     @Override
     protected void setResourcePaths(ApplicationTemplate applicationTemplate) {
@@ -209,9 +218,6 @@ public final class AppUI extends UITemplate {
         chart.getData().clear();
     }
 
-    public TextArea getTextArea() {
-        return textArea;
-    }
 
     private void layout() {
         PropertyManager manager = applicationTemplate.manager;
@@ -233,24 +239,30 @@ public final class AppUI extends UITemplate {
         String fontname = manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLEFONT.name());
         Double fontsize = Double.parseDouble(manager.getPropertyValue(AppPropertyTypes.LEFT_PANE_TITLESIZE.name()));
         leftPanelTitle.setFont(Font.font(fontname, fontsize));
+        leftPanelTitle.visibleProperty().bind(showTextArea);
 
         textArea = new TextArea();
+        textArea.visibleProperty().bind(showTextArea);
+        textArea.editableProperty().bind(toggleSwitchIsOn);
+
 
         //Following is the code that adds Toogle like switch to processButtonBOx
         HBox processButtonsBox = new HBox();
         Pane buttonBody = new Pane();
         Text toggleText = new Text();
         toggleText.getStyleClass().add("tb-text");
-        toggleText.textProperty().bind(Bindings.when(switchedOnProperty()).then("EDIT").otherwise("DONE"));
+        toggleText.textProperty().bind(Bindings.when(toggleSwitchIsOn).then("EDIT").otherwise("DONE"));
         processButtonsBox.setHgrow(processButtonsBox, Priority.ALWAYS);
         processButtonsBox.getChildren().addAll(toggleSwitch(buttonBody), toggleText);
+        processButtonsBox.visibleProperty().bind(showToggleSwitchBox);
+
 
         //MetaData Info
         HBox metaDataBox = new HBox();
-        Text metaDataInfo = new Text();
+        metaDataInfo = new Text();
         metaDataInfo.getStyleClass().add("md-text");
-        metaDataInfo.setText(metaData.get());
         metaDataBox.getChildren().add(metaDataInfo);
+        metaDataBox.visibleProperty().bind(showMetaData);
 
         //Adding Algorithm buttons to the leftPanel
         //Intializing the algorithmBox
@@ -266,17 +278,22 @@ public final class AppUI extends UITemplate {
         algorithmBox.setSpacing(10);
 
         algorithmBox.getChildren().addAll(algorithmBoxTitle, classification, clustering);
+        classification.visibleProperty().bind(showClassificationAlgorithm);
+        algorithmBox.visibleProperty().bind(metaDataBox.visibleProperty());
+
 
         //SubAlgorithmModule
         VBox subAlgorithmModule = new VBox();
 
-        isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
-            subAlgorithmModule.getChildren().clear();
-            showRun.set(false);
-            subAlgorithmModuleProcessing(subAlgorithmModule, newValue);
-        });
-
+//        isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
+//            subAlgorithmModule.getChildren().clear();
+//            showRun.set(false);
+//            subAlgorithmModuleProcessing(subAlgorithmModule, newValue);
+//        });
+        subAlgorithmModuleProcessing(subAlgorithmModule);
         subAlgorithmModule.setSpacing(20);
+        subAlgorithmModule.visibleProperty().bind(showSubAlgorithms);
+
 
         //Run Button
         HBox runBox = new HBox();
@@ -294,100 +311,12 @@ public final class AppUI extends UITemplate {
         run.setGraphic(imageView);
 
         runBox.getChildren().add(run);
+        runBox.visibleProperty().bind(showRunButton);
+
 
         //Add the textArea, leftPanelTitle and processbuttonsBox to leftPanel.
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox, algorithmBox, subAlgorithmModule, runBox);
 
-        leftPanel.setVisible(false);
-
-        showRun.addListener((obs, oldState, newState) -> {
-                    if (newState) {
-                        runBox.setVisible(true);
-                    } else {
-                        runBox.setVisible(false);
-                    }
-                }
-        );
-
-        showSubAlgorithms.addListener((obs, oldState, newState) -> {
-                    if (newState) {
-                        subAlgorithmModule.setVisible(true);
-                    } else {
-                        subAlgorithmModule.setVisible(false);
-                        showRun.set(false);
-
-                    }
-                }
-        );
-
-        showAlgorithmType.addListener((obs, oldState, newState) -> {
-            boolean check = newState;
-            if (check) {
-                algorithmBox.setVisible(false);
-                showSubAlgorithms.set(false);
-            } else {
-                algorithmBox.setVisible(true);
-
-            }
-        });
-
-        //Change Listener on the string metaData value
-        metaData.addListener((obs, oldState, newState) -> {
-            metaDataInfo.setText(newState);
-
-            if (metaDataInfo.getText().isEmpty()) {
-                showAlgorithmType.set(true);
-            } else {
-                showAlgorithmType.set(false);
-            }
-
-        });
-
-        bothAlgorithm.addListener((obs, oldState, newState) -> {
-            if (newState) {
-                classification.setVisible(true);
-            } else {
-                classification.setVisible(false);
-            }
-        });
-
-        // Change Listener on the boolean variable leftSide
-        leftSide.addListener((observable, oldValue, newValue) -> {
-
-            switch (newValue.intValue()) {
-
-                // 2 is for loadData
-                case 2:
-                    //hide the processButtonsBox
-                    toggleSwitchIsOn.set(false);
-                    metaData.set("");
-                    textArea.setEditable(false);
-                    textArea.setStyle("-fx-control-inner-background: #D3D3D3");
-                    newButton.setDisable(false);
-                    leftPanel.setVisible(true);
-                    processButtonsBox.setVisible(false);
-                    break;
-
-                //3 is for newData
-                case 3:
-                    //show the processButtonsBox
-                    metaData.set("");
-                    toggleSwitchIsOn.set(true);
-                    textArea.setStyle(null);
-                    textArea.setEditable(true);
-                    leftPanel.setVisible(true);
-                    processButtonsBox.setVisible(true);
-                    break;
-
-                //This is the case where we want to make the leftPanel invisible
-                case 4:
-                    leftPanel.setVisible(false);
-                    break;
-                default:
-                    break;
-            }
-
-        });
 
         StackPane rightPanel = new StackPane(chart);
 
@@ -507,7 +436,6 @@ public final class AppUI extends UITemplate {
                 chart.getData().remove(chart.getData().size() - 1);
             }
 
-
             chart.getData().add(regression);
             chart.setId("classification");
 
@@ -531,12 +459,7 @@ public final class AppUI extends UITemplate {
             clustering.getStyleClass().removeAll("algo-selected");
             classification.getStyleClass().add("algo-selected");
             showSubAlgorithms.set(true);
-            if (isClusteringAlgorithm.get()) {
-                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
-            } else {
-                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
-                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
-            }
+            isClusteringAlgorithm.set(false);
 
         });
     }
@@ -546,9 +469,7 @@ public final class AppUI extends UITemplate {
             clustering.getStyleClass().add("algo-selected");
             classification.getStyleClass().removeAll("algo-selected");
             showSubAlgorithms.set(true);
-            if (!isClusteringAlgorithm.get()) {
-                isClusteringAlgorithm.set(!isClusteringAlgorithm.get());
-            }
+            isClusteringAlgorithm.set(true);
 
         });
     }
@@ -663,7 +584,6 @@ public final class AppUI extends UITemplate {
         fillAnimation.setShape(rectangle);
 
         toggleSwitchIsOn.addListener((obs, oldState, newState) -> {
-            metaData.set("");
             boolean isOn = newState;
             translateAnimation.setToX(isOn ? 50 - 25 : 0);
             fillAnimation.setFromValue(isOn ? Color.WHITE : Color.DODGERBLUE);
@@ -671,17 +591,24 @@ public final class AppUI extends UITemplate {
             animation.play();
 
             if (isOn) {
-                textArea.setEditable(true);
                 textArea.setStyle(null);
-            } else if (leftSide.getValue() != 2) {
-                textArea.setEditable(false);
+                showMetaData.set(false);
+                showSubAlgorithms.set(false);
+                showRunButton.set(false);
+                clustering.getStyleClass().removeAll("algo-selected");
+                classification.getStyleClass().removeAll("algo-selected");
+            } else {
+
                 textArea.setStyle("-fx-control-inner-background: #D3D3D3");
 
-                //when the edit is completed this part sends data to AppData to check if the data is valid.
-                chart.getData().clear();
-                AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
-                dataComponent.clear();
-                dataComponent.loadData(textArea.getText());
+                if (showToggleSwitchBox.get()) {
+
+                    //when the edit is completed this part sends data to AppData to check if the data is valid.
+                    chart.getData().clear();
+                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
+                    dataComponent.clear();
+                    dataComponent.loadData(textArea.getText());
+                }
 
             }
 
@@ -697,10 +624,8 @@ public final class AppUI extends UITemplate {
      * if its a clustering or classification.
      *
      * @param subAlgorithmModule
-     * @param value              - This is a boolean that defines what type of algorithm was
-     *                           selected.
      */
-    private void subAlgorithmModuleProcessing(VBox subAlgorithmModule, Boolean value) {
+    private void subAlgorithmModuleProcessing(VBox subAlgorithmModule) {
         PropertyManager manager = applicationTemplate.manager;
 
         ToggleGroup group = new ToggleGroup();
@@ -721,7 +646,7 @@ public final class AppUI extends UITemplate {
             configuration.setGraphic(imageView);
 
             radioButton.setOnMouseClicked(e -> {
-                showRun.set(true);
+                showRunButton.set(true);
             });
 
             configuration.setOnMouseClicked(e -> {
@@ -785,8 +710,8 @@ public final class AppUI extends UITemplate {
                 gridPane.add(noOfClustersLabel, 0, 3);
                 gridPane.add(noOfClustersText, 1, 3);
 
-                noOfClustersLabel.setVisible(value);
-                noOfClustersText.setVisible(value);
+                noOfClustersLabel.visibleProperty().bind(isClusteringAlgorithm);
+                noOfClustersText.visibleProperty().bind(isClusteringAlgorithm);
 
                 Label runPlay = new Label("Continous Run?");
                 gridPane.add(runPlay, 0, 4);
@@ -810,7 +735,7 @@ public final class AppUI extends UITemplate {
                     try {
                         maxIterations = Integer.parseInt(maxIterationtext.getText());
                         updateInterval = Integer.parseInt(updateIntervalText.getText());
-                        if (value) {
+                        if (isClusteringAlgorithm.get()) {
                             noOfClusters = Integer.parseInt(noOfClustersText.getText());
                         }
                         isContinous = checkBox.isSelected();
@@ -843,6 +768,18 @@ public final class AppUI extends UITemplate {
             subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
         }
 
+    }
+
+    public void resetUI() {
+        newButton.setDisable(false);
+        showToggleSwitchBox.set(false);
+        showTextArea.set(false);
+        toggleSwitchIsOn.set(false);
+        showMetaData.set(false);
+        showClassificationAlgorithm.set(false);
+        isClusteringAlgorithm.set(false);
+        showSubAlgorithms.set(false);
+        showRunButton.set(false);
     }
 
 }

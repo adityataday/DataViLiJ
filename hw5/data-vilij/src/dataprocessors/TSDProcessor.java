@@ -162,6 +162,10 @@ public final class TSDProcessor {
     void clear() {
         dataPoints.clear();
         dataLabels.clear();
+        min_x = new AtomicInteger(Integer.MAX_VALUE);
+        max_x = new AtomicInteger(Integer.MIN_VALUE);
+        min_y = new AtomicInteger(Integer.MAX_VALUE);
+        max_y = new AtomicInteger(Integer.MIN_VALUE);
     }
 
     private String checkedname(String name) throws InvalidDataNameException {
@@ -206,10 +210,10 @@ public final class TSDProcessor {
             valueSet.add(dataLabels.get(s));
         });
 
-        if (valueSet.size() <= 2) {
-            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(true);
+        if (valueSet.size() == 2) {
+            ((AppUI) (applicationTemplate.getUIComponent())).setShowClassificationAlgorithm(true);
         } else {
-            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(false);
+            ((AppUI) (applicationTemplate.getUIComponent())).setShowClassificationAlgorithm(false);
         }
 
         metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n").append(dataFilePath.toString());
@@ -225,13 +229,13 @@ public final class TSDProcessor {
             valueSet.add(dataLabels.get(s));
         });
 
-        if (valueSet.size() <= 2) {
-            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(true);
+        if (valueSet.size() == 2) {
+            ((AppUI) (applicationTemplate.getUIComponent())).setShowClassificationAlgorithm(true);
         } else {
-            ((AppUI) (applicationTemplate.getUIComponent())).setBothAlgorithm(false);
+            ((AppUI) (applicationTemplate.getUIComponent())).setShowClassificationAlgorithm(false);
         }
 
-        metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded from :\n");
+        metadata.append(dataLabels.keySet().size()).append(" instances with \n").append(valueSet.size()).append(" labels loaded\n");
         metadata.append("The labels are: \n").append(valueSet.toString());
 
         return metadata.toString();

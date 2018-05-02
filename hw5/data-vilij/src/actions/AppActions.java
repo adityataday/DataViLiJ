@@ -1,5 +1,6 @@
 package actions;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.stage.FileChooser;
 import settings.AppPropertyTypes;
@@ -16,10 +17,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.WritableImage;
+
 import javax.imageio.ImageIO;
+
 import static settings.AppPropertyTypes.DATA_FILE_EXT;
 import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
 import static settings.AppPropertyTypes.IMAGE_FILE_EXT;
@@ -30,6 +34,7 @@ import static settings.AppPropertyTypes.LOAD_DATA;
 import static settings.AppPropertyTypes.SAVE_IMAGE;
 
 import ui.AppUI;
+
 import static vilij.settings.PropertyTypes.SAVE_WORK_TITLE;
 
 /**
@@ -67,7 +72,6 @@ public final class AppActions implements ActionComponent {
 
     @Override
     public void handleNewRequest() {
-        ((AppUI) (applicationTemplate.getUIComponent())).setLeftSideProperty(3);
         try {
             if (!isUnsaved.get() || promptToSave()) {
                 applicationTemplate.getDataComponent().clear();
@@ -77,8 +81,8 @@ public final class AppActions implements ActionComponent {
                 ((AppUI) applicationTemplate.getUIComponent()).getNewButton().setDisable(true);
                 ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
                 ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
-                ((AppUI) applicationTemplate.getUIComponent()).setShowSubAlgorithms(false);
-                ((AppUI) applicationTemplate.getUIComponent()).setShowRun(false);
+                ((AppUI) applicationTemplate.getUIComponent()).setShowTextArea(true);
+                ((AppUI) applicationTemplate.getUIComponent()).setShowToggleSwitchBox(true);
             }
         } catch (IOException e) {
             errorHandlingHelper();
