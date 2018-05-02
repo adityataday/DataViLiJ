@@ -91,13 +91,13 @@ public class RandomClassifier extends Classifier {
                  */
                 break;
             }
-            try {
-                System.out.println("IN" + " " + queue.size());
-                Thread.sleep(1000);
-                
-            } catch (InterruptedException ex) {
-                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
-            }
+//            try {
+//                System.out.println("IN" + " " + queue.size());
+//                Thread.sleep(1000);
+//
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         }
     }
 

@@ -1,6 +1,7 @@
 package dataprocessors;
 
 import java.nio.file.Path;
+
 import javafx.geometry.Point2D;
 import javafx.scene.chart.XYChart;
 
@@ -8,10 +9,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
 import static settings.AppPropertyTypes.LABEL_ALREADY_EXISTS;
 import static settings.AppPropertyTypes.TO_MANY_LINES;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_1;
 import static settings.AppPropertyTypes.TO_MANY_LINES_MSG_2;
+
 import ui.AppUI;
 import vilij.components.Dialog;
 import vilij.components.ErrorDialog;
@@ -62,27 +65,39 @@ public final class TSDProcessor {
     public void setDataPoints(Map<String, Point2D> dataPoints) {
         this.dataPoints = dataPoints;
     }
+
     private Map<String, Point2D> dataPoints;
     private ApplicationTemplate applicationTemplate;
 
-    private AtomicInteger min;
-
-    public int getMin() {
-        return min.get();
-    }
-
-    public int getMax() {
-        return max.get();
-    }
-
-    private AtomicInteger max;
+    private AtomicInteger min_x;
+    private AtomicInteger max_x;
+    private AtomicInteger min_y;
+    private AtomicInteger max_y;
 
     public TSDProcessor(ApplicationTemplate applicationTemplate) {
         dataLabels = new HashMap<>();
         dataPoints = new HashMap<>();
         this.applicationTemplate = applicationTemplate;
-        min = new AtomicInteger(Integer.MAX_VALUE);
-        max = new AtomicInteger(Integer.MIN_VALUE);
+        min_x = new AtomicInteger(Integer.MAX_VALUE);
+        max_x = new AtomicInteger(Integer.MIN_VALUE);
+        min_y = new AtomicInteger(Integer.MAX_VALUE);
+        max_y = new AtomicInteger(Integer.MIN_VALUE);
+    }
+
+    public int getMin_x() {
+        return min_x.get();
+    }
+
+    public int getMax_x() {
+        return max_x.get();
+    }
+
+    public int getMin_y() {
+        return min_y.get();
+    }
+
+    public int getMax_y() {
+        return max_y.get();
     }
 
     /**
@@ -90,7 +105,7 @@ public final class TSDProcessor {
      *
      * @param tsdString the input data provided as a single {@link String}
      * @throws Exception if the input string does not follow the
-     * <code>.tsd</code> data format
+     *                   <code>.tsd</code> data format
      */
     public void processString(String tsdString) throws Exception {
         AtomicBoolean hadAnError = new AtomicBoolean(false);
@@ -105,12 +120,7 @@ public final class TSDProcessor {
                         String label = list.get(1);
                         String[] pair = list.get(2).split(",");
                         Point2D point = new Point2D(Double.parseDouble(pair[0]), Double.parseDouble(pair[1]));
-                        if ((int) Double.parseDouble(pair[0]) < min.get()) {
-                            min.set((int) Double.parseDouble(pair[0]));
-                        }
-                        if ((int) Double.parseDouble(pair[0]) > max.get()) {
-                            max.set((int) Double.parseDouble(pair[0]));
-                        }
+                        getPointsDetails(pair);
                         checkInstanceDuplicates(name);
                         dataLabels.put(name, label);
                         dataPoints.put(name, point);
@@ -169,7 +179,7 @@ public final class TSDProcessor {
 
     }
 
-//    private void displayFilter() {
+    //    private void displayFilter() {
 //        ArrayList<String> keys = new ArrayList<>(dataLabels.keySet());
 //
 //        for (int i = 0; i < keys.size(); i++) {
@@ -225,6 +235,23 @@ public final class TSDProcessor {
         metadata.append("The labels are: \n").append(valueSet.toString());
 
         return metadata.toString();
+    }
+
+    private void getPointsDetails(String[] pair) {
+        if ((int) Double.parseDouble(pair[0]) < min_x.get()) {
+            min_x.set((int) Double.parseDouble(pair[0]));
+        }
+        if ((int) Double.parseDouble(pair[0]) > max_x.get()) {
+            max_x.set((int) Double.parseDouble(pair[0]));
+        }
+
+        if ((int) Double.parseDouble(pair[1]) < min_y.get()) {
+            min_y.set((int) Double.parseDouble(pair[1]));
+        }
+        if ((int) Double.parseDouble(pair[1]) > max_y.get()) {
+            max_y.set((int) Double.parseDouble(pair[1]));
+        }
+
     }
 
 //    private void averageY(XYChart<Number, Number> chart) {

@@ -5,8 +5,11 @@ import classification.RandomClassifier;
 import data.DataSet;
 import dataprocessors.AppData;
 import javafx.scene.shape.Rectangle;
+
 import static java.io.File.separator;
+
 import java.util.List;
+
 import javafx.util.Duration;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
@@ -53,6 +56,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import vilij.components.Dialog;
 import vilij.components.ErrorDialog;
+
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_FILENAME;
 import static vilij.settings.PropertyTypes.CSS_RESOURCE_PATH;
 import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
@@ -211,6 +215,7 @@ public final class AppUI extends UITemplate {
 
     private void layout() {
         PropertyManager manager = applicationTemplate.manager;
+
         NumberAxis xAxis = new NumberAxis();
         NumberAxis yAxis = new NumberAxis();
         chart = new LineChart<>(xAxis, yAxis);
@@ -296,23 +301,23 @@ public final class AppUI extends UITemplate {
         leftPanel.setVisible(false);
 
         showRun.addListener((obs, oldState, newState) -> {
-            if (newState) {
-                runBox.setVisible(true);
-            } else {
-                runBox.setVisible(false);
-            }
-        }
+                    if (newState) {
+                        runBox.setVisible(true);
+                    } else {
+                        runBox.setVisible(false);
+                    }
+                }
         );
 
         showSubAlgorithms.addListener((obs, oldState, newState) -> {
-            if (newState) {
-                subAlgorithmModule.setVisible(true);
-            } else {
-                subAlgorithmModule.setVisible(false);
-                showRun.set(false);
+                    if (newState) {
+                        subAlgorithmModule.setVisible(true);
+                    } else {
+                        subAlgorithmModule.setVisible(false);
+                        showRun.set(false);
 
-            }
-        }
+                    }
+                }
         );
 
         showAlgorithmType.addListener((obs, oldState, newState) -> {
@@ -430,10 +435,9 @@ public final class AppUI extends UITemplate {
     }
 
     private void classificationAlgorithmProcessing() {
-        //showRun.set(false);
 
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
-        dataComponent.displayData();
+        initializeChart(dataComponent);
         DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
         RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
         new Thread(classifier).start();
@@ -490,12 +494,12 @@ public final class AppUI extends UITemplate {
     }
 
     private void classificationAlgorithmOutput(List<Integer> algorithmOutput, AppData dataComponent) {
-        double y1 = ((dataComponent.getProcessor().getMin() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
-        double y2 = ((dataComponent.getProcessor().getMax() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
+        double y1 = ((dataComponent.getProcessor().getMin_x() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
+        double y2 = ((dataComponent.getProcessor().getMax_x() * algorithmOutput.get(0)) + algorithmOutput.get(2)) / algorithmOutput.get(1);
 
         XYChart.Series<Number, Number> regression = new XYChart.Series<>();
-        regression.getData().add(0, new XYChart.Data<>(dataComponent.getProcessor().getMin(), y1));
-        regression.getData().add(1, new XYChart.Data<>(dataComponent.getProcessor().getMax(), y2));
+        regression.getData().add(0, new XYChart.Data<>(dataComponent.getProcessor().getMin_x(), y1));
+        regression.getData().add(1, new XYChart.Data<>(dataComponent.getProcessor().getMax_x(), y2));
         regression.setName("Regression");
 
         Platform.runLater(() -> {
@@ -503,13 +507,23 @@ public final class AppUI extends UITemplate {
                 chart.getData().remove(chart.getData().size() - 1);
             }
 
-            chart.getData().add(regression);
 
-            regression.nodeProperty().get().setStyle(" -fx-stroke-width: 4;"
-                    + "-fx-stroke: red;");
+            chart.getData().add(regression);
+            chart.setId("classification");
 
         });
 
+    }
+
+    private void initializeChart(AppData dataComponent) {
+        chart.getXAxis().setAutoRanging(false);
+        chart.getYAxis().setAutoRanging(false);
+        ((NumberAxis) chart.getXAxis()).setLowerBound(dataComponent.getProcessor().getMin_x() - 1);
+        ((NumberAxis) chart.getXAxis()).setUpperBound(dataComponent.getProcessor().getMax_x() + 1);
+        ((NumberAxis) chart.getYAxis()).setLowerBound(dataComponent.getProcessor().getMin_y() - 1);
+        ((NumberAxis) chart.getYAxis()).setUpperBound(dataComponent.getProcessor().getMax_y() + 1);
+        chart.setAnimated(false);
+        dataComponent.displayData();
     }
 
     private void setClassificationActions() {
@@ -562,7 +576,7 @@ public final class AppUI extends UITemplate {
         });
     }
 
-//    private void setDisplayButtonActions() {
+    //    private void setDisplayButtonActions() {
 //        displayButton.setOnAction(event -> {
 //            if (hasNewText) {
 //                try {
@@ -683,8 +697,8 @@ public final class AppUI extends UITemplate {
      * if its a clustering or classification.
      *
      * @param subAlgorithmModule
-     * @param value - This is a boolean that defines what type of algorithm was
-     * selected.
+     * @param value              - This is a boolean that defines what type of algorithm was
+     *                           selected.
      */
     private void subAlgorithmModuleProcessing(VBox subAlgorithmModule, Boolean value) {
         PropertyManager manager = applicationTemplate.manager;
