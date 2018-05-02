@@ -30,10 +30,6 @@ public class RandomClassifier extends Classifier {
     // currently, this value does not change after instantiation
     private final AtomicBoolean tocontinue;
 
-    public LinkedBlockingQueue<List<Integer>> getQueue() {
-        return queue;
-    }
-
     @Override
     public int getMaxIterations() {
         return maxIterations;

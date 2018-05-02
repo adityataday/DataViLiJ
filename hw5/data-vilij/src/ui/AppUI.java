@@ -1,6 +1,8 @@
 package ui;
 
 import actions.AppActions;
+import algorithms.Algorithm;
+import algorithms.Classifier;
 import classification.RandomClassifier;
 import data.DataSet;
 import dataprocessors.AppData;
@@ -98,6 +100,7 @@ public final class AppUI extends UITemplate {
     private BooleanProperty isClusteringAlgorithm;
     private BooleanProperty showSubAlgorithms;
     private BooleanProperty showRunButton;
+    private BooleanProperty istFirstRun;
 
 
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
@@ -111,6 +114,7 @@ public final class AppUI extends UITemplate {
         isClusteringAlgorithm = new SimpleBooleanProperty();
         showSubAlgorithms = new SimpleBooleanProperty();
         showRunButton = new SimpleBooleanProperty();
+        istFirstRun = new SimpleBooleanProperty(true);
 
     }
 
@@ -345,19 +349,27 @@ public final class AppUI extends UITemplate {
 
     private void setRunActions() {
         run.setOnMouseClicked(e -> {
-            if (maxIterations != 0 || updateInterval != 0) {
-                if (!isClusteringAlgorithm.get()) {
-                    classificationAlgorithmProcessing();
+            if (istFirstRun.get()) {
+                if (maxIterations != 0 || updateInterval != 0) {
+                    if (isClusteringAlgorithm.get()) {
+
+                    } else {
+                        //Clustering Algorithms
+                        classificationAlgorithmProcessing();
+                    }
                 } else {
-                    //Clustering Algorithms
+                    ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+                    //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
+                    String errTitle = "Cannot Run";
+                    String errMsg = "No run configuration found.";
+                    String errInput = " Please input valid run configurations";
+                    dialog.show(errTitle, errMsg + errInput);
                 }
+                istFirstRun.set(false);
             } else {
-                ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
-                //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
-                String errTitle = "Cannot Run";
-                String errMsg = "No run configuration found.";
-                String errInput = " Please input valid run configurations";
-                dialog.show(errTitle, errMsg + errInput);
+                synchronized (this) {
+                    notify();
+                }
             }
 
         });
@@ -366,59 +378,57 @@ public final class AppUI extends UITemplate {
     private void classificationAlgorithmProcessing() {
 
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
-        initializeChart(dataComponent);
-        DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
-        RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
-        new Thread(classifier).start();
 
-        if (isContinous) {
+        if (radioButton.getText().equalsIgnoreCase("RandomClassifier")) {
 
-            Runnable task = () -> {
-                try {
-                    while (!Thread.interrupted()) {
-                        List<Integer> algorithmOutput = classifier.getQueue().take();
-
-                        classificationAlgorithmOutput(algorithmOutput, dataComponent);
-
-                        // Do Something
-//                                System.out.println("OUT" + " " + classifier.getQueue().size());
-                        Thread.sleep(1000);
-
-                    }
-
-                } catch (InterruptedException ex) {
-
-                }
-
-            };
-            new Thread(task).start();
+            initializeChart(dataComponent);
+            DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
+            RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
+            new Thread(classifier).start();
+            consumer(classifier);
 
         } else {
+            //other algorithms
+        }
 
-            Runnable task = () -> {
 
-                try {
-                    while (!Thread.interrupted()) {
-                        System.out.println("I want to go here");
-                        List<Integer> algorithmOutput = classifier.getQueue().take();
+    }
 
-                        classificationAlgorithmOutput(algorithmOutput, dataComponent);
+    private void consumer(Classifier classifier) {
+        AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
-                        //Do Something
-//                        System.out.println("OUT" + " " + classifier.getQueue().size());
-//                        Thread.sleep(3000);
-                        wait();
+        Runnable task = () -> {
 
+            try {
+                while (!Thread.interrupted()) {
+                    List<Integer> algorithmOutput = classifier.getQueue().take();
+
+                    classificationAlgorithmOutput(algorithmOutput, dataComponent);
+
+////                        Do Something
+//                    System.out.println("OUT" + " " + classifier.getQueue().size());
+
+                    if (!isContinous) {
+                        scrnshotButton.setDisable(false);
+                        showRunButton.set(true);
+                        synchronized (this) {
+                            wait();
+                        }
+                    } else {
+                        scrnshotButton.setDisable(true);
+                        showRunButton.set(false);
+                        Thread.sleep(1000);
                     }
 
-                } catch (InterruptedException ex) {
 
                 }
 
-            };
-            new Thread(task).start();
+            } catch (InterruptedException ex) {
 
-        }
+            }
+
+        };
+        new Thread(task).start();
 
     }
 
