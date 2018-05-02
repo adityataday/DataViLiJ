@@ -365,7 +365,7 @@ public final class AppUI extends UITemplate {
                     String errInput = " Please input valid run configurations";
                     dialog.show(errTitle, errMsg + errInput);
                 }
-                istFirstRun.set(false);
+
             } else {
                 synchronized (this) {
                     notify();
@@ -379,13 +379,14 @@ public final class AppUI extends UITemplate {
 
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
-        if (radioButton.getText().equalsIgnoreCase("RandomClassifier")) {
+        if (((RadioButton) radioButton.getToggleGroup().getSelectedToggle()).getText().equalsIgnoreCase("RandomClassifier1")) {
 
             initializeChart(dataComponent);
             DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
             RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
             new Thread(classifier).start();
             consumer(classifier);
+            istFirstRun.set(false);
 
         } else {
             //other algorithms
@@ -642,7 +643,7 @@ public final class AppUI extends UITemplate {
 
         for (int i = 1; i <= 3; i++) {
             HBox listOfAlgorithms = new HBox();
-            radioButton = new RadioButton("RandomClassifier");
+            radioButton = new RadioButton("RandomClassifier" + i);
             configuration = new Button();
             String iconsPath = "/" + String.join(separator,
                     manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
