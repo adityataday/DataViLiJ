@@ -1,18 +1,10 @@
 package ui;
 
 import actions.AppActions;
-import algorithms.Algorithm;
 import algorithms.Classifier;
 import classification.RandomClassifier;
 import data.DataSet;
 import dataprocessors.AppData;
-import javafx.scene.shape.Rectangle;
-
-import static java.io.File.separator;
-
-import java.util.List;
-
-import javafx.util.Duration;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
@@ -27,41 +19,29 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import settings.AppPropertyTypes;
+import vilij.components.Dialog;
+import vilij.components.ErrorDialog;
 import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Modality;
-import vilij.components.Dialog;
-import vilij.components.ErrorDialog;
+import java.util.List;
 
-import static vilij.settings.PropertyTypes.CSS_RESOURCE_FILENAME;
-import static vilij.settings.PropertyTypes.CSS_RESOURCE_PATH;
-import static vilij.settings.PropertyTypes.GUI_RESOURCE_PATH;
-import static vilij.settings.PropertyTypes.ICONS_RESOURCE_PATH;
-import static vilij.settings.PropertyTypes.IS_WINDOW_RESIZABLE;
+import static java.io.File.separator;
+import static vilij.settings.PropertyTypes.*;
 
 /**
  * This is the application's user interface implementation.
@@ -77,6 +57,7 @@ public final class AppUI extends UITemplate {
 
     @SuppressWarnings("FieldCanBeLocal")
     private Button scrnshotButton; // toolbar button to take a screenshot of the data
+
     private LineChart<Number, Number> chart;          // the chart where data will be displayed
     private Button run;  // workspace button to display data on the chart
     private TextArea textArea;       // text area for new data input
@@ -101,6 +82,7 @@ public final class AppUI extends UITemplate {
     private BooleanProperty showSubAlgorithms;
     private BooleanProperty showRunButton;
     private BooleanProperty istFirstRun;
+    private BooleanProperty isAlgorithmRunning;
 
 
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
@@ -115,11 +97,21 @@ public final class AppUI extends UITemplate {
         showSubAlgorithms = new SimpleBooleanProperty();
         showRunButton = new SimpleBooleanProperty();
         istFirstRun = new SimpleBooleanProperty(true);
+        isAlgorithmRunning = new SimpleBooleanProperty();
+
 
     }
 
     public boolean isShowToggleSwitchBox() {
         return showToggleSwitchBox.get();
+    }
+
+    public boolean getIsAlgorithmRunning() {
+        return isAlgorithmRunning.get();
+    }
+
+    public boolean isIstFirstRun() {
+        return istFirstRun.get();
     }
 
 
@@ -192,9 +184,11 @@ public final class AppUI extends UITemplate {
         String scrnshoticonPath = String.join(separator,
                 iconsPath,
                 manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_ICON.name()));
+        String restarticonPath = String.join(separator,
+                iconsPath,
+                manager.getPropertyValue(AppPropertyTypes.RESTART_ICON.name()));
         scrnshotButton = setToolbarButton(scrnshoticonPath,
-                manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()),
-                true);
+                manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()), true);
         newButton.setDisable(false);
         toolBar.getItems().add(scrnshotButton);
     }
@@ -220,6 +214,28 @@ public final class AppUI extends UITemplate {
     public void clear() {
         textArea.clear();
         chart.getData().clear();
+        scrnshotButton.setDisable(true);
+        newButton.setDisable(false);
+        loadButton.setDisable(false);
+
+
+        showToggleSwitchBox.set(false);
+        showTextArea.set(false);
+        toggleSwitchIsOn.set(false);
+        showMetaData.set(false);
+        showClassificationAlgorithm.set(false);
+        isClusteringAlgorithm.set(false);
+        showSubAlgorithms.set(false);
+        showRunButton.set(false);
+        isAlgorithmRunning.set(false);
+        istFirstRun.set(true);
+        maxIterations = 0;
+        updateInterval = 0;
+        isContinous = false;
+        noOfClusters = 0;
+
+        radioButton.getToggleGroup().selectToggle(null);
+
     }
 
 
@@ -305,13 +321,11 @@ public final class AppUI extends UITemplate {
         String iconsPath = "/" + String.join(separator,
                 manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
                 manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
-        String configPath = String.join(separator,
-                iconsPath, "play-button.png");
+        String runButtonPath = String.join(separator,
+                iconsPath,
+                manager.getPropertyValue(AppPropertyTypes.RUN_ICON.name()));
 
-        ImageView imageView = new ImageView(configPath);
-
-        imageView.setFitHeight(25);
-        imageView.setFitWidth(25);
+        ImageView imageView = new ImageView(runButtonPath);
         run.setGraphic(imageView);
 
         runBox.getChildren().add(run);
@@ -334,6 +348,7 @@ public final class AppUI extends UITemplate {
 
         appPane.getChildren().add(workspace);
         VBox.setVgrow(appPane, Priority.ALWAYS);
+
 
         applicationTemplate.getUIComponent().getPrimaryScene().getStylesheets().add(cssPath);
     }
@@ -384,8 +399,10 @@ public final class AppUI extends UITemplate {
             initializeChart(dataComponent);
             DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
             RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
-            new Thread(classifier).start();
-            consumer(classifier);
+            classifier.getQueue().clear();
+            Thread producer = new Thread(classifier);
+            producer.start();
+            consumer(classifier, producer.getId());
             istFirstRun.set(false);
 
         } else {
@@ -395,25 +412,39 @@ public final class AppUI extends UITemplate {
 
     }
 
-    private void consumer(Classifier classifier) {
+    private void consumer(Classifier classifier, long id) {
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
         Runnable task = () -> {
 
             try {
+                isAlgorithmRunning.set(true);
                 while (!Thread.interrupted()) {
+
+                    if ((classifier.producerIsIsDone().get() && classifier.getQueue().isEmpty()) || ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
+                        Thread.currentThread().interrupt();
+                        if (!classifier.producerIsIsDone().get()) {
+                            Thread.getAllStackTraces().keySet().stream()
+                                    .filter(thread -> thread.getId() == id)
+                                    .findFirst().get().interrupt();
+                        }
+                    }
+
+
                     List<Integer> algorithmOutput = classifier.getQueue().take();
+
 
                     classificationAlgorithmOutput(algorithmOutput, dataComponent);
 
-////                        Do Something
-//                    System.out.println("OUT" + " " + classifier.getQueue().size());
+//                        Do Something
+                    System.out.println("OUT" + " " + classifier.getQueue().size());
 
                     if (!isContinous) {
                         scrnshotButton.setDisable(false);
                         showRunButton.set(true);
                         synchronized (this) {
                             wait();
+                            System.out.println("I am woken");
                         }
                     } else {
                         scrnshotButton.setDisable(true);
@@ -424,12 +455,33 @@ public final class AppUI extends UITemplate {
 
                 }
 
+
             } catch (InterruptedException ex) {
+                System.out.println("consumer interrupted");
+
+                if (((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
+                    System.out.println("I go here");
+                    ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().set(false);
+                    classifier.producerIsIsDone().set(false);
+                } else {
+                    Platform.runLater(() -> {
+                        ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+                        PropertyManager manager = applicationTemplate.manager;
+                        String errTitle = manager.getPropertyValue(AppPropertyTypes.ALGORITHM_DONE_TITLE.name());
+                        String errMsg = manager.getPropertyValue(AppPropertyTypes.ALGORITHM_DONE_MESSAGE.name());
+                        dialog.show(errTitle, errMsg);
+                    });
+
+                    loadButton.setDisable(true);
+                    scrnshotButton.setDisable(false);
+                    isAlgorithmRunning.set(false);
+                }
+
 
             }
-
         };
         new Thread(task).start();
+
 
     }
 
@@ -443,12 +495,19 @@ public final class AppUI extends UITemplate {
         regression.setName("Regression");
 
         Platform.runLater(() -> {
-            if (chart.getData().get(chart.getData().size() - 1).getName().equals("Regression")) {
-                chart.getData().remove(chart.getData().size() - 1);
+            try {
+                if (chart.getData().get(chart.getData().size() - 1).getName().equals("Regression")) {
+                    chart.getData().remove(chart.getData().size() - 1);
+                }
+
+                chart.getData().add(regression);
+                chart.setId("classification");
+            } catch (Exception e) {
+                System.out.println("oopss there was nothing here");
+                showRunButton.set(false);
+                scrnshotButton.setDisable(true);
             }
 
-            chart.getData().add(regression);
-            chart.setId("classification");
 
         });
 
@@ -649,11 +708,10 @@ public final class AppUI extends UITemplate {
                     manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
                     manager.getPropertyValue(ICONS_RESOURCE_PATH.name()));
             String configPath = String.join(separator,
-                    iconsPath, "config.png");
+                    iconsPath,
+                    manager.getPropertyValue(AppPropertyTypes.CONFIG_ICON.name()));
 
             ImageView imageView = new ImageView(configPath);
-            imageView.setFitHeight(20);
-            imageView.setFitWidth(20);
             configuration.setGraphic(imageView);
 
             radioButton.setOnMouseClicked(e -> {
@@ -751,13 +809,18 @@ public final class AppUI extends UITemplate {
                         }
                         isContinous = checkBox.isSelected();
 
+                        if (maxIterations < 0 || updateInterval < 0 || (isClusteringAlgorithm.get() && noOfClusters < 2))
+                            throw new NumberFormatException();
+
                         secondryStage.close();
+
+
                     } catch (NumberFormatException ex) {
                         ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
                         //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
                         String errTitle = "Invalid Input";
                         String errMsg = "Invalid input type.";
-                        String errInput = " Please input integer values only.";
+                        String errInput = " Please input positive integer values only.";
                         dialog.show(errTitle, errMsg + errInput);
                     }
 
@@ -773,6 +836,7 @@ public final class AppUI extends UITemplate {
             });
 
             radioButton.setToggleGroup(group);
+            configuration.visibleProperty().bind(isAlgorithmRunning.not());
 
             listOfAlgorithms.getChildren().addAll(radioButton, configuration);
             listOfAlgorithms.setSpacing(10);
@@ -781,16 +845,5 @@ public final class AppUI extends UITemplate {
 
     }
 
-    public void resetUI() {
-        newButton.setDisable(false);
-        showToggleSwitchBox.set(false);
-        showTextArea.set(false);
-        toggleSwitchIsOn.set(false);
-        showMetaData.set(false);
-        showClassificationAlgorithm.set(false);
-        isClusteringAlgorithm.set(false);
-        showSubAlgorithms.set(false);
-        showRunButton.set(false);
-    }
 
 }

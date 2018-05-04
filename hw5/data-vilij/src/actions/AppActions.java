@@ -1,9 +1,12 @@
 package actions;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import settings.AppPropertyTypes;
+import ui.AppUI;
 import vilij.components.ActionComponent;
 import vilij.components.ConfirmationDialog;
 import vilij.components.Dialog;
@@ -12,29 +15,15 @@ import vilij.propertymanager.PropertyManager;
 import vilij.settings.PropertyTypes;
 import vilij.templates.ApplicationTemplate;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.image.WritableImage;
-
-import javax.imageio.ImageIO;
-
-import static settings.AppPropertyTypes.DATA_FILE_EXT;
-import static settings.AppPropertyTypes.DATA_FILE_EXT_DESC;
-import static settings.AppPropertyTypes.IMAGE_FILE_EXT;
-import static settings.AppPropertyTypes.IMAGE_FILE_EXT_DESC;
-import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION_DATA;
-import static settings.AppPropertyTypes.INCORRECT_FILE_EXTENSION_IMAGE;
-import static settings.AppPropertyTypes.LOAD_DATA;
-import static settings.AppPropertyTypes.SAVE_IMAGE;
-
-import ui.AppUI;
-
+import static settings.AppPropertyTypes.*;
 import static vilij.settings.PropertyTypes.SAVE_WORK_TITLE;
 
 /**
@@ -61,32 +50,71 @@ public final class AppActions implements ActionComponent {
      */
     SimpleBooleanProperty isUnsaved;
 
+    AtomicBoolean clearSignal;
+
     public AppActions(ApplicationTemplate applicationTemplate) {
         this.applicationTemplate = applicationTemplate;
         this.isUnsaved = new SimpleBooleanProperty(false);
+        this.clearSignal = new AtomicBoolean();
     }
 
     public void setIsUnsavedProperty(boolean property) {
         isUnsaved.set(property);
     }
 
+    public AtomicBoolean isClearSignal() {
+        return clearSignal;
+    }
+
     @Override
     public void handleNewRequest() {
         try {
-            if (!isUnsaved.get() || promptToSave()) {
-                applicationTemplate.getDataComponent().clear();
+            if (((AppUI) (applicationTemplate.getUIComponent())).getIsAlgorithmRunning()) {
+                ConfirmationDialog dialog = ConfirmationDialog.getDialog();
+                PropertyManager manager = applicationTemplate.manager;
+                String errTitle = manager.getPropertyValue(AppPropertyTypes.EXIT_WHILE_RUNNING_WARNING_TITLE.name());
+                String errMsg = manager.getPropertyValue(AppPropertyTypes.EXIT_WHILE_RUNNING_WARNING.name());
+                dialog.show(errTitle, errMsg);
+
+                if (dialog.getSelectedOption().equals(ConfirmationDialog.Option.YES)) {
+                    if (isUnsaved.get())
+                        promptToSave();
+                    clearSignal.set(true);
+                    applicationTemplate.getDataComponent().clear();
+                    applicationTemplate.getUIComponent().clear();
+                    isUnsaved.set(false);
+                    newButtonHelper();
+                    synchronized (((AppUI) applicationTemplate.getUIComponent())) {
+                        ((AppUI) applicationTemplate.getUIComponent()).notify();
+
+                    }
+                }
+            } else if (!isUnsaved.get() || promptToSave()) {
                 applicationTemplate.getUIComponent().clear();
+                applicationTemplate.getDataComponent().clear();
                 isUnsaved.set(false);
                 dataFilePath = null;
-                ((AppUI) applicationTemplate.getUIComponent()).getNewButton().setDisable(true);
-                ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
-                ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
-                ((AppUI) applicationTemplate.getUIComponent()).setShowTextArea(true);
-                ((AppUI) applicationTemplate.getUIComponent()).setShowToggleSwitchBox(true);
+                newButtonHelper();
+
             }
+
+
+//            if (!((AppUI) applicationTemplate.getUIComponent()).isIstFirstRun()) {
+//                clearSignal.setValue(true);
+//            }
         } catch (IOException e) {
             errorHandlingHelper();
+        } catch (Exception e) {
+
         }
+    }
+
+    private void newButtonHelper() {
+        ((AppUI) applicationTemplate.getUIComponent()).getNewButton().setDisable(true);
+        ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
+        ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
+        ((AppUI) applicationTemplate.getUIComponent()).setShowTextArea(true);
+        ((AppUI) applicationTemplate.getUIComponent()).setShowToggleSwitchBox(true);
     }
 
     @Override
@@ -94,7 +122,7 @@ public final class AppActions implements ActionComponent {
         // TODO: NOT A PART OF HW 1
         try {
             if (dataFilePath == null) {
-                if (promptToSave() && !isUnsaved.get()) {
+                if (!isUnsaved.get() || promptToSave()) {
                     ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
                 }
 
@@ -102,7 +130,6 @@ public final class AppActions implements ActionComponent {
                 save();
                 ((AppUI) applicationTemplate.getUIComponent()).getSaveButton().setDisable(true);
             }
-
             isUnsaved.set(false);
 
         } catch (IOException e) {
@@ -125,11 +152,27 @@ public final class AppActions implements ActionComponent {
     @Override
     public void handleExitRequest() {
         try {
-            if (!isUnsaved.get() || promptToSave()) {
+            if (((AppUI) (applicationTemplate.getUIComponent())).getIsAlgorithmRunning()) {
+                ConfirmationDialog dialog = ConfirmationDialog.getDialog();
+                PropertyManager manager = applicationTemplate.manager;
+                String errTitle = manager.getPropertyValue(AppPropertyTypes.EXIT_WHILE_RUNNING_WARNING_TITLE.name());
+                String errMsg = manager.getPropertyValue(AppPropertyTypes.EXIT_WHILE_RUNNING_WARNING.name());
+                dialog.show(errTitle, errMsg);
+
+                if (dialog.getSelectedOption().equals(ConfirmationDialog.Option.YES)) {
+                    System.exit(0);
+                }
+
+
+            } else if ((!isUnsaved.get() || promptToSave())) {
+
                 System.exit(0);
             }
+
         } catch (IOException e) {
             errorHandlingHelper();
+        } catch (Exception e) {
+
         }
     }
 
@@ -137,6 +180,7 @@ public final class AppActions implements ActionComponent {
     public void handlePrintRequest() {
         // TODO: NOT A PART OF HW 1
     }
+
 
     public void handleScreenshotRequest() {
         // TODO: NOT A PART OF HW 1
@@ -254,5 +298,6 @@ public final class AppActions implements ActionComponent {
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), applicationTemplate.manager.getPropertyValue(IMAGE_FILE_EXT.name()).substring(1), selected);
         }
     }
+
 
 }

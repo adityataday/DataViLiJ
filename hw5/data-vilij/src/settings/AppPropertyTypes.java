@@ -17,15 +17,21 @@ public enum AppPropertyTypes {
 
     /* user interface icon file names */
     SCREENSHOT_ICON,
+    RESTART_ICON,
+    CONFIG_ICON,
+    RUN_ICON,
 
     /* tooltips for user interface buttons */
     SCREENSHOT_TOOLTIP,
+    RESTART_TOOLTIP,
 
     /* error messages */
     RESOURCE_SUBDIR_NOT_FOUND,
     INCORRECT_FILE_EXTENSION_DATA,
     INCORRECT_FILE_EXTENSION_IMAGE,
     LABEL_ALREADY_EXISTS,
+    EXIT_WHILE_RUNNING_WARNING,
+    EXIT_WHILE_RUNNING_WARNING_TITLE,
 
     /* application-specific message titles */
     SAVE_UNSAVED_WORK_TITLE,
@@ -34,9 +40,11 @@ public enum AppPropertyTypes {
     TO_MANY_LINES_MSG_1,
     TO_MANY_LINES_MSG_2,
     SAVE_IMAGE,
+    ALGORITHM_DONE_TITLE,
 
     /* application-specific messages */
     SAVE_UNSAVED_WORK,
+    ALGORITHM_DONE_MESSAGE,
 
     /* application-specific parameters */
     DATA_FILE_EXT,

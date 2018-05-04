@@ -12,12 +12,18 @@ functionality within the main workspace. -->
 
         <!-- USER INTERFACE ICON FILES -->
         <property name="SCREENSHOT_ICON" value="screenshot.png"/>
+        <property name="RESTART_ICON" value="restart.png"/>
+        <property name="CONFIG_ICON" value="config.png"/>
+        <property name="RUN_ICON" value="play-button.png"/>
 
         <!-- TOOLTIPS FOR BUTTONS -->
         <property name="SCREENSHOT_TOOLTIP" value="Screenshot"/> <!-- will print current view of image to a file -->
+        <property name="RESTART_TOOLTIP" value="Restart"/> <!-- will print current view of image to a file -->
         
 
         <!-- WARNING MESSAGES -->
+        <property name="EXIT_WHILE_RUNNING_WARNING_TITLE"
+                  value="EXIT WARNING"/>
         <property name="EXIT_WHILE_RUNNING_WARNING"
                   value="An algorithm is running. If you exit now, all unsaved changes will be lost. Are you sure?"/>
 
@@ -34,9 +40,11 @@ functionality within the main workspace. -->
         <property name="TO_MANY_LINES" value="To many lines"/>
         <property name="TO_MANY_LINES_MSG_1" value="Loaded data consists of "/>
         <property name="TO_MANY_LINES_MSG_2" value=" lines. Showing only the first 10 in the text area."/>
+        <property name="ALGORITHM_DONE_TITLE" value="Done"/>
 
         <!-- APPLICATION-SPECIFIC MESSAGES -->
         <property name="SAVE_UNSAVED_WORK" value="Would you like to save current work?"/>
+        <property name="ALGORITHM_DONE_MESSAGE" value="Algorithm execution complete! To restart the application click the new button."/>
 
         <!-- APPLICATION-SPECIFIC PARAMETERS -->
         <property name="DATA_FILE_EXT" value=".tsd"/>

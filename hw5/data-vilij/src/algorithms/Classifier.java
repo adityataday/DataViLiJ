@@ -1,7 +1,11 @@
 package algorithms;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An abstract class for classification algorithms. The output
@@ -31,5 +35,14 @@ public abstract class Classifier implements Algorithm {
     public List<Integer> getOutput() {
         return output;
     }
+
+    public AtomicBoolean producerIsIsDone() {
+        return producerIsIsDone;
+    }
+    public void setproducerIsIsDone(boolean value) {
+        producerIsIsDone.set(value);
+    }
+
+    protected AtomicBoolean producerIsIsDone = new AtomicBoolean();
 
 }

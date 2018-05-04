@@ -1,7 +1,6 @@
 package dataprocessors;
 
 import actions.AppActions;
-import javafx.scene.text.Text;
 import settings.AppPropertyTypes;
 import ui.AppUI;
 import vilij.components.DataComponent;
@@ -144,7 +143,7 @@ public class AppData implements DataComponent {
         ((AppActions) applicationTemplate.getActionComponent()).setIsUnsavedProperty(false);
         processor.clear();
         if (!((AppUI) applicationTemplate.getUIComponent()).isShowToggleSwitchBox() || ((AppUI) applicationTemplate.getUIComponent()).isToggleSwitchIsOn())
-            ((AppUI) applicationTemplate.getUIComponent()).resetUI();
+            ((AppUI) applicationTemplate.getUIComponent()).clear();
         else
             ((AppUI) applicationTemplate.getUIComponent()).setToggleSwitchIsOn(true);
 

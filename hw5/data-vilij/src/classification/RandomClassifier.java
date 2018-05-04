@@ -2,7 +2,10 @@ package classification;
 
 import algorithms.Classifier;
 import data.DataSet;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
+import javax.xml.transform.Source;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -27,6 +30,7 @@ public class RandomClassifier extends Classifier {
     private final int maxIterations;
     private final int updateInterval;
 
+
     // currently, this value does not change after instantiation
     private final AtomicBoolean tocontinue;
 
@@ -45,6 +49,7 @@ public class RandomClassifier extends Classifier {
         return tocontinue.get();
     }
 
+
     public RandomClassifier(DataSet dataset,
                             int maxIterations,
                             int updateInterval,
@@ -53,48 +58,57 @@ public class RandomClassifier extends Classifier {
         this.maxIterations = maxIterations;
         this.updateInterval = updateInterval;
         this.tocontinue = new AtomicBoolean(tocontinue);
+
     }
 
     @Override
     public void run() {
-        for (int i = 1; i <= maxIterations; i++) {
-            int xCoefficient = new Long(-1 * Math.round((2 * RAND.nextDouble() - 1) * 10)).intValue();
-            int yCoefficient = 10;
-            int constant = RAND.nextInt(11);
+        try {
+            for (int i = 1; i <= maxIterations; i++) {
 
-            // this is the real output of the classifier
-            output = Arrays.asList(xCoefficient, yCoefficient, constant);
+                if (Thread.interrupted())
+                    throw new InterruptedException();
 
-            // everything below is just for internal viewing of how the output is changing
-            // in the final project, such changes will be dynamically visible in the UI
-            if (i % updateInterval == 0) {
+                int xCoefficient = new Long(-1 * Math.round((2 * RAND.nextDouble() - 1) * 10)).intValue();
+                int yCoefficient = 10;
+                int constant = RAND.nextInt(11);
 
-                queue.add(output);
+                // this is the real output of the classifier
+                output = Arrays.asList(xCoefficient, yCoefficient, constant);
 
-                //For the purpose of internal viewing
-                /* System.out.printf("Iteration number %d: ", i); //
-                flush();
-                 */
-            }
-            if (i > maxIterations * .6 && RAND.nextDouble() < 0.05) {
+                // everything below is just for internal viewing of how the output is changing
+                // in the final project, such changes will be dynamically visible in the UI
+                if (i % updateInterval == 0) {
 
-                queue.add(output);
+                    queue.add(output);
 
-                //For the purpose of internal viewing
-                /*
-                System.out.printf("Iteration number %d: ", i);
-                flush();
-                 */
-                break;
-            }
-//            try {
-//                System.out.println("IN" + " " + queue.size());
-//                Thread.sleep(1000);
+                    //For the purpose of internal viewing
+//                System.out.printf("Iteration number %d: ", i); //
+//                flush();
+
+                }
+                if (i > maxIterations * .6 && RAND.nextDouble() < 0.05) {
+
+                    queue.add(output);
+
+//                    //For the purpose of internal viewing
 //
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(RandomClassifier.class.getName()).log(Level.SEVERE, null, ex);
-//            }
+//                System.out.printf("Iteration number %d: ", i);
+//                flush();
+
+                    break;
+                }
+
+                System.out.println("IN" + " " + queue.size());
+//                Thread.sleep(1000);
+
+            }
+            producerIsIsDone.set(true);
+        } catch (InterruptedException ex) {
+            System.out.println("I am interuopted");
         }
+
+
     }
 
     // for internal viewing only
