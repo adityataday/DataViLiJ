@@ -38,6 +38,12 @@ import vilij.propertymanager.PropertyManager;
 import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.io.File.separator;
@@ -184,9 +190,6 @@ public final class AppUI extends UITemplate {
         String scrnshoticonPath = String.join(separator,
                 iconsPath,
                 manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_ICON.name()));
-        String restarticonPath = String.join(separator,
-                iconsPath,
-                manager.getPropertyValue(AppPropertyTypes.RESTART_ICON.name()));
         scrnshotButton = setToolbarButton(scrnshoticonPath,
                 manager.getPropertyValue(AppPropertyTypes.SCREENSHOT_TOOLTIP.name()), true);
         newButton.setDisable(false);
@@ -235,6 +238,7 @@ public final class AppUI extends UITemplate {
         noOfClusters = 0;
 
         radioButton.getToggleGroup().selectToggle(null);
+
 
     }
 
@@ -305,11 +309,11 @@ public final class AppUI extends UITemplate {
         //SubAlgorithmModule
         VBox subAlgorithmModule = new VBox();
 
-//        isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
-//            subAlgorithmModule.getChildren().clear();
-//            showRun.set(false);
-//            subAlgorithmModuleProcessing(subAlgorithmModule, newValue);
-//        });
+        isClusteringAlgorithm.addListener((observable, oldValue, newValue) -> {
+            subAlgorithmModule.getChildren().clear();
+            showRunButton.set(false);
+            subAlgorithmModuleProcessing(subAlgorithmModule);
+        });
         subAlgorithmModuleProcessing(subAlgorithmModule);
         subAlgorithmModule.setSpacing(20);
         subAlgorithmModule.visibleProperty().bind(showSubAlgorithms);
@@ -394,21 +398,20 @@ public final class AppUI extends UITemplate {
 
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
-        if (((RadioButton) radioButton.getToggleGroup().getSelectedToggle()).getText().equalsIgnoreCase("RandomClassifier1")) {
+        String className = ((RadioButton) radioButton.getToggleGroup().getSelectedToggle()).getText();
 
-            initializeChart(dataComponent);
+        try {
             DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
-            RandomClassifier classifier = new RandomClassifier(dataset, maxIterations, updateInterval, isContinous);
+            Classifier classifier = (Classifier) Class.forName("classification."+className).getConstructor(DataSet.class, int.class, int.class, boolean.class).newInstance(dataset, maxIterations, updateInterval, isContinous);
+            initializeChart(dataComponent);
             classifier.getQueue().clear();
             Thread producer = new Thread(classifier);
             producer.start();
             consumer(classifier, producer.getId());
             istFirstRun.set(false);
-
-        } else {
-            //other algorithms
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
 
     }
 
@@ -698,11 +701,20 @@ public final class AppUI extends UITemplate {
     private void subAlgorithmModuleProcessing(VBox subAlgorithmModule) {
         PropertyManager manager = applicationTemplate.manager;
 
+        List<String> classList;
         ToggleGroup group = new ToggleGroup();
 
-        for (int i = 1; i <= 3; i++) {
+        if (isClusteringAlgorithm.get()) {
+            String filePath = manager.getPropertyValue(AppPropertyTypes.CLUSTERING_RESOURCE_PATH.name());
+            classList = getSubAlgorithmList(filePath);
+        } else {
+            String filePath = manager.getPropertyValue(AppPropertyTypes.CLASSIFICATION_RESOURCE_PATH.name());
+            classList = getSubAlgorithmList(filePath);
+        }
+
+        for (int i = 0; i < classList.size(); i++) {
             HBox listOfAlgorithms = new HBox();
-            radioButton = new RadioButton("RandomClassifier" + i);
+            radioButton = new RadioButton(classList.get(i++));
             configuration = new Button();
             String iconsPath = "/" + String.join(separator,
                     manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
@@ -843,6 +855,26 @@ public final class AppUI extends UITemplate {
             subAlgorithmModule.getChildren().addAll(listOfAlgorithms);
         }
 
+    }
+
+    private List<String> getSubAlgorithmList(String filePath) {
+        List<String> classList = new ArrayList<>();
+
+
+        try {
+            Files.newDirectoryStream(Paths.get(filePath), path -> path.toString().endsWith(".java"))
+                    .forEach(Path ->
+                            classList.add(Arrays.stream(Path.getFileName().toString().split("[.]")).findFirst().get()));
+
+        } catch (IOException e) {
+            PropertyManager manager = applicationTemplate.manager;
+            ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+            String errTitle = manager.getPropertyValue(AppPropertyTypes.NO_ALGORITHM_FOUND_TITLE.name());
+            String errMsg = e.getMessage();
+            dialog.show(errTitle, errMsg);
+        }
+
+        return classList;
     }
 
 

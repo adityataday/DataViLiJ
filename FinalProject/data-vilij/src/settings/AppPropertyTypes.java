@@ -14,6 +14,8 @@ public enum AppPropertyTypes {
     GUI_RESOURCE_PATH,
     CSS_RESOURCE_PATH,
     CSS_RESOURCE_FILENAME,
+    CLASSIFICATION_RESOURCE_PATH,
+    CLUSTERING_RESOURCE_PATH,
 
     /* user interface icon file names */
     SCREENSHOT_ICON,
@@ -32,6 +34,7 @@ public enum AppPropertyTypes {
     LABEL_ALREADY_EXISTS,
     EXIT_WHILE_RUNNING_WARNING,
     EXIT_WHILE_RUNNING_WARNING_TITLE,
+    NO_ALGORITHM_FOUND_TITLE,
 
     /* application-specific message titles */
     SAVE_UNSAVED_WORK_TITLE,

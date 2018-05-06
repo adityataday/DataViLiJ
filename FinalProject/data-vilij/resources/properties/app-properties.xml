@@ -6,6 +6,8 @@ functionality within the main workspace. -->
     <property_list>
         <!-- RESOURCE FILES AND FOLDERS -->
         <property name="DATA_RESOURCE_PATH" value="data"/>
+        <property name="CLASSIFICATION_RESOURCE_PATH" value=".\data-vilij\src\classification"/>
+        <property name="CLUSTERING_RESOURCE_PATH" value=".\data-vilij\src\clustering"/>
         <property name="GUI_RESOURCE_PATH" value="gui"/>
         <property name="CSS_RESOURCE_PATH" value="css"/>
         <property name="CSS_RESOURCE_FILENAME" value="data-vilij.css"/>
@@ -32,6 +34,10 @@ functionality within the main workspace. -->
         <property name="INCORRECT_FILE_EXTENSION_DATA" value="Program only supports Tab-Seperated Data files, Please save/load .tsd extention files only."/>
         <property name="INCORRECT_FILE_EXTENSION_IMAGE" value="Program only supports PNG files, Please save as .png extention only."/>
         <property name="LABEL_ALREADY_EXISTS" value=" label already exists"/>
+        <property name="NO_ALGORITHM_FOUND_TITLE" value="No Algorithm found"/>
+
+
+
 
         <!-- APPLICATION-SPECIFIC MESSAGE TITLES -->
         <property name="SAVE_UNSAVED_WORK_TITLE" value="Save Current Work"/>

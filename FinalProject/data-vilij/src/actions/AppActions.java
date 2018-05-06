@@ -105,7 +105,7 @@ public final class AppActions implements ActionComponent {
         } catch (IOException e) {
             errorHandlingHelper();
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
