@@ -1,8 +1,5 @@
 package algorithms;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,13 +29,10 @@ public abstract class Classifier implements Algorithm {
 
     protected LinkedBlockingQueue<List<Integer>> queue = new LinkedBlockingQueue();
 
-    public List<Integer> getOutput() {
-        return output;
-    }
-
     public AtomicBoolean producerIsIsDone() {
         return producerIsIsDone;
     }
+
     public void setproducerIsIsDone(boolean value) {
         producerIsIsDone.set(value);
     }

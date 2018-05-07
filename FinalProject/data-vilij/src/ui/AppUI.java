@@ -2,7 +2,7 @@ package ui;
 
 import actions.AppActions;
 import algorithms.Classifier;
-import classification.RandomClassifier;
+import algorithms.Clusterer;
 import data.DataSet;
 import dataprocessors.AppData;
 import javafx.animation.FillTransition;
@@ -39,7 +39,6 @@ import vilij.templates.ApplicationTemplate;
 import vilij.templates.UITemplate;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -370,12 +369,8 @@ public final class AppUI extends UITemplate {
         run.setOnMouseClicked(e -> {
             if (istFirstRun.get()) {
                 if (maxIterations != 0 || updateInterval != 0) {
-                    if (isClusteringAlgorithm.get()) {
+                    algorithmProcessing();
 
-                    } else {
-                        //Clustering Algorithms
-                        classificationAlgorithmProcessing();
-                    }
                 } else {
                     ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
                     //manager.getPropertyValue(PropertyTypes.SAVE_ERROR_MSG.name());
@@ -394,7 +389,7 @@ public final class AppUI extends UITemplate {
         });
     }
 
-    private void classificationAlgorithmProcessing() {
+    private void algorithmProcessing() {
 
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
@@ -402,12 +397,24 @@ public final class AppUI extends UITemplate {
 
         try {
             DataSet dataset = DataSet.fromTSDProcessor(dataComponent.getProcessor());
-            Classifier classifier = (Classifier) Class.forName("classification."+className).getConstructor(DataSet.class, int.class, int.class, boolean.class).newInstance(dataset, maxIterations, updateInterval, isContinous);
-            initializeChart(dataComponent);
-            classifier.getQueue().clear();
-            Thread producer = new Thread(classifier);
-            producer.start();
-            consumer(classifier, producer.getId());
+            if (isClusteringAlgorithm.get()) {
+                Clusterer clusterer = (Clusterer) Class.forName(clustering.getText().toLowerCase() + "." + className).getConstructor(DataSet.class, int.class, int.class, int.class).newInstance(dataset, maxIterations, updateInterval, noOfClusters);
+                clusterer.getQueue().clear();
+                initializeChart(dataComponent);
+                Thread producer = new Thread(clusterer);
+                producer.start();
+
+                clusteringAlgorithmConsumer(clusterer, producer.getId());
+            } else {
+                Classifier classifier = (Classifier) Class.forName(classification.getText().toLowerCase() + "." + className).getConstructor(DataSet.class, int.class, int.class, boolean.class).newInstance(dataset, maxIterations, updateInterval, isContinous);
+                classifier.getQueue().clear();
+                initializeChart(dataComponent);
+                Thread producer = new Thread(classifier);
+                producer.start();
+
+                classificationConsumer(classifier, producer.getId());
+            }
+
             istFirstRun.set(false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -415,7 +422,80 @@ public final class AppUI extends UITemplate {
 
     }
 
-    private void consumer(Classifier classifier, long id) {
+    private void clusteringAlgorithmConsumer(Clusterer clusterer, long id) {
+        AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
+
+        Runnable task = () -> {
+
+            try {
+                isAlgorithmRunning.set(true);
+                while (!Thread.interrupted()) {
+
+                    if ((clusterer.producerIsIsDone().get() && clusterer.getQueue().isEmpty()) || ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
+                        Thread.currentThread().interrupt();
+                        if (!clusterer.producerIsIsDone().get()) {
+                            Thread.getAllStackTraces().keySet().stream()
+                                    .filter(thread -> thread.getId() == id)
+                                    .findFirst().get().interrupt();
+                        }
+                    }
+
+
+                    dataComponent.getProcessor().setDataLabels(clusterer.getQueue().take());
+
+
+                    Platform.runLater(() -> {
+                        chart.getData().clear();
+                        dataComponent.displayData();
+
+                    });
+
+
+//                        Do Something
+                    System.out.println("Consumer Thread: Removal From Queue. Current Queue Size is: " + " " + clusterer.getQueue().size());
+
+                    if (!isContinous) {
+                        scrnshotButton.setDisable(false);
+                        showRunButton.set(true);
+                        synchronized (this) {
+                            wait();
+                        }
+                    } else {
+                        scrnshotButton.setDisable(true);
+                        showRunButton.set(false);
+                        Thread.sleep(1000);
+                    }
+
+
+                }
+
+
+            } catch (InterruptedException ex) {
+                System.out.println("Consumer Thread: Interrupted");
+
+                if (((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
+                    ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().set(false);
+                    clusterer.producerIsIsDone().set(false);
+                } else {
+                    Platform.runLater(() -> {
+                        ErrorDialog dialog = (ErrorDialog) applicationTemplate.getDialog(Dialog.DialogType.ERROR);
+                        PropertyManager manager = applicationTemplate.manager;
+                        String errTitle = manager.getPropertyValue(AppPropertyTypes.ALGORITHM_DONE_TITLE.name());
+                        String errMsg = manager.getPropertyValue(AppPropertyTypes.ALGORITHM_DONE_MESSAGE.name());
+                        dialog.show(errTitle, errMsg);
+                    });
+
+                    loadButton.setDisable(true);
+                    scrnshotButton.setDisable(false);
+                    isAlgorithmRunning.set(false);
+                }
+
+            }
+        };
+        new Thread(task).start();
+    }
+
+    private void classificationConsumer(Classifier classifier, long id) {
         AppData dataComponent = ((AppData) applicationTemplate.getDataComponent());
 
         Runnable task = () -> {
@@ -440,14 +520,13 @@ public final class AppUI extends UITemplate {
                     classificationAlgorithmOutput(algorithmOutput, dataComponent);
 
 //                        Do Something
-                    System.out.println("OUT" + " " + classifier.getQueue().size());
+                    System.out.println("Consumer Thread: Removal From Queue. Current Queue Size is: " + " " + classifier.getQueue().size());
 
                     if (!isContinous) {
                         scrnshotButton.setDisable(false);
                         showRunButton.set(true);
                         synchronized (this) {
                             wait();
-                            System.out.println("I am woken");
                         }
                     } else {
                         scrnshotButton.setDisable(true);
@@ -460,10 +539,9 @@ public final class AppUI extends UITemplate {
 
 
             } catch (InterruptedException ex) {
-                System.out.println("consumer interrupted");
+                System.out.println("Consumer Thread: Interrupted");
 
                 if (((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
-                    System.out.println("I go here");
                     ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().set(false);
                     classifier.producerIsIsDone().set(false);
                 } else {
@@ -479,7 +557,6 @@ public final class AppUI extends UITemplate {
                     scrnshotButton.setDisable(false);
                     isAlgorithmRunning.set(false);
                 }
-
 
             }
         };

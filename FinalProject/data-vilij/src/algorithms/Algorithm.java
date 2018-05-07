@@ -14,4 +14,5 @@ public interface Algorithm extends Runnable {
 
     boolean tocontinue();
 
+
 }

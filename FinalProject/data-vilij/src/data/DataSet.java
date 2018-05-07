@@ -55,16 +55,17 @@ public class DataSet {
         labels = new HashMap<>();
         locations = new HashMap<>();
     }
-    
-    
+
+
     /**
-     * Constructor for TSDProcessor = Dataset. 
+     * Constructor for TSDProcessor = Dataset.
+     *
      * @param labels
-     * @param locations 
+     * @param locations
      */
     public DataSet(Map<String, String> labels, Map<String, Point2D> locations) {
-        this.labels = labels;
-        this.locations = locations;
+        this.labels = new HashMap<>(labels);
+        this.locations = new HashMap<>(locations);
     }
 
     public Map<String, String> getLabels() {
