@@ -11,7 +11,9 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -89,6 +91,8 @@ public final class AppUI extends UITemplate {
     private BooleanProperty istFirstRun;
     private BooleanProperty isAlgorithmRunning;
 
+    private IntegerProperty iterationNumber;
+
 
     public AppUI(Stage primaryStage, ApplicationTemplate applicationTemplate) {
         super(primaryStage, applicationTemplate);
@@ -103,7 +107,7 @@ public final class AppUI extends UITemplate {
         showRunButton = new SimpleBooleanProperty();
         istFirstRun = new SimpleBooleanProperty(true);
         isAlgorithmRunning = new SimpleBooleanProperty();
-
+        iterationNumber = new SimpleIntegerProperty(0);
 
     }
 
@@ -236,6 +240,7 @@ public final class AppUI extends UITemplate {
         updateInterval = 0;
         isContinous = false;
         noOfClusters = 0;
+        iterationNumber.set(0);
 
         radioButton.getToggleGroup().selectToggle(null);
 
@@ -340,11 +345,16 @@ public final class AppUI extends UITemplate {
         leftPanel.getChildren().addAll(leftPanelTitle, textArea, processButtonsBox, metaDataBox, algorithmBox, subAlgorithmModule, runBox);
 
 
-        StackPane rightPanel = new StackPane(chart);
+        StackPane rightPanel = new StackPane();
+
+
+        rightPanel.getChildren().add(chart);
 
         rightPanel.setMaxSize(windowWidth * 0.69, windowHeight * 0.69);
         rightPanel.setMinSize(windowWidth * 0.69, windowHeight * 0.69);
-        StackPane.setAlignment(rightPanel, Pos.CENTER);
+        StackPane.setAlignment(chart, Pos.CENTER);
+        displayInterval(rightPanel);
+
 
         workspace = new HBox(leftPanel, rightPanel);
 
@@ -362,8 +372,6 @@ public final class AppUI extends UITemplate {
         setClassificationActions();
         setClusteringActions();
         setRunActions();
-        //setDisplayButtonActions();
-        //setCheckBoxAction();
     }
 
     private void setRunActions() {
@@ -431,6 +439,7 @@ public final class AppUI extends UITemplate {
                 isAlgorithmRunning.set(true);
                 while (!Thread.interrupted()) {
 
+
                     if ((clusterer.producerIsIsDone().get() && clusterer.getQueue().isEmpty()) || ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
                         Thread.currentThread().interrupt();
                         if (!clusterer.producerIsIsDone().get()) {
@@ -442,7 +451,7 @@ public final class AppUI extends UITemplate {
 
 
                     dataComponent.getProcessor().setDataLabels(clusterer.getQueue().take());
-
+                    iterationNumber.set(iterationNumber.get() + 1);
 
                     Platform.runLater(() -> {
                         chart.getData().clear();
@@ -505,6 +514,7 @@ public final class AppUI extends UITemplate {
                 isAlgorithmRunning.set(true);
                 while (!Thread.interrupted()) {
 
+
                     if ((classifier.producerIsIsDone().get() && classifier.getQueue().isEmpty()) || ((AppActions) (applicationTemplate.getActionComponent())).isClearSignal().get()) {
                         Thread.currentThread().interrupt();
                         if (!classifier.producerIsIsDone().get()) {
@@ -516,6 +526,7 @@ public final class AppUI extends UITemplate {
 
 
                     List<Integer> algorithmOutput = classifier.getQueue().take();
+                    iterationNumber.set(iterationNumber.get() + 1);
 
 
                     classificationAlgorithmOutput(algorithmOutput, dataComponent);
@@ -649,42 +660,6 @@ public final class AppUI extends UITemplate {
         });
     }
 
-    //    private void setDisplayButtonActions() {
-//        displayButton.setOnAction(event -> {
-//            if (hasNewText) {
-//                try {
-//                    chart.getData().clear();
-//                    AppData dataComponent = (AppData) applicationTemplate.getDataComponent();
-//                    dataComponent.clear();
-//                    dataComponent.loadData(textArea.getText());
-//                    dataComponent.displayData();
-//
-//                    if (chart.getData().isEmpty()) {
-//                        scrnshotButton.setDisable(true);
-//                    } else {
-//                        scrnshotButton.setDisable(false);
-//                    }
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//            hasNewText = false;
-//        });
-//    }
-//
-//    private void setCheckBoxAction() {
-//        checkBox.setOnAction(event -> {
-//            if (checkBox.isSelected()) {
-//                textArea.setEditable(false);
-//                textArea.setStyle("-fx-control-inner-background: #D3D3D3");
-//            } else {
-//                textArea.setEditable(true);
-//                textArea.setStyle(null);
-//            }
-//        });
-//    }
     public Button getSaveButton() {
         return saveButton;
     }
@@ -954,6 +929,27 @@ public final class AppUI extends UITemplate {
         }
 
         return classList;
+    }
+
+    private void displayInterval(StackPane rightPanel) {
+        final Text iterationNumberText = new Text();
+
+        iterationNumber.addListener((observable, oldVal, newVal) -> {
+            iterationNumberText.setText("t = " + newVal);
+
+        });
+
+        iterationNumberText.visibleProperty().bind(Bindings.lessThanOrEqual(1, iterationNumber));
+
+        iterationNumberText.getStyleClass().add("iteration-text");
+
+
+        rightPanel.getChildren().add(iterationNumberText);
+        iterationNumberText.setManaged(false);
+        iterationNumberText.setLayoutX(625);
+        iterationNumberText.setLayoutY(70);
+
+
     }
 
 

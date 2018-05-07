@@ -283,7 +283,8 @@ public final class AppActions implements ActionComponent {
     }
 
     private void saveImage() throws IOException {
-        WritableImage image = ((AppUI) applicationTemplate.getUIComponent()).getChart().snapshot(new SnapshotParameters(), null);
+        WritableImage image = ((AppUI) applicationTemplate.getUIComponent()).getChart().getParent().snapshot(new SnapshotParameters(), null);
+
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(applicationTemplate.manager.getPropertyValue(SAVE_IMAGE.name()));

@@ -143,4 +143,10 @@ and open the template in the editor.
     -fx-padding: 7px 5px 7px 5px;
     -fx-shape: "M5,0 L10,9 L5,18 L0,9 Z";
 }
+
+.iteration-text{
+    -fx-font: 15px "Sans Serif";
+    -fx-fill: BLACK;
+    -fx-font-style: italic;
+}
  
