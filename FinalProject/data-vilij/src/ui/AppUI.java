@@ -403,7 +403,6 @@ public final class AppUI extends UITemplate {
                 initializeChart(dataComponent);
                 Thread producer = new Thread(clusterer);
                 producer.start();
-
                 clusteringAlgorithmConsumer(clusterer, producer.getId());
             } else {
                 Classifier classifier = (Classifier) Class.forName(classification.getText().toLowerCase() + "." + className).getConstructor(DataSet.class, int.class, int.class, boolean.class).newInstance(dataset, maxIterations, updateInterval, isContinous);
@@ -791,7 +790,7 @@ public final class AppUI extends UITemplate {
 
         for (int i = 0; i < classList.size(); i++) {
             HBox listOfAlgorithms = new HBox();
-            radioButton = new RadioButton(classList.get(i++));
+            radioButton = new RadioButton(classList.get(i));
             configuration = new Button();
             String iconsPath = "/" + String.join(separator,
                     manager.getPropertyValue(GUI_RESOURCE_PATH.name()),
