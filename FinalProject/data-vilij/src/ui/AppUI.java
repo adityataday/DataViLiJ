@@ -216,6 +216,7 @@ public final class AppUI extends UITemplate {
     public void clear() {
         textArea.clear();
         chart.getData().clear();
+        chart.setId(null);
         scrnshotButton.setDisable(true);
         newButton.setDisable(false);
         loadButton.setDisable(false);
@@ -445,6 +446,7 @@ public final class AppUI extends UITemplate {
 
                     Platform.runLater(() -> {
                         chart.getData().clear();
+                        chart.setId("clustering");
                         dataComponent.displayData();
 
                     });
@@ -579,8 +581,9 @@ public final class AppUI extends UITemplate {
                     chart.getData().remove(chart.getData().size() - 1);
                 }
 
-                chart.getData().add(regression);
                 chart.setId("classification");
+                chart.getData().add(regression);
+
             } catch (Exception e) {
                 System.out.println("oopss there was nothing here");
                 showRunButton.set(false);
